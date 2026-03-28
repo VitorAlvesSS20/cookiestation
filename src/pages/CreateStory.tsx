@@ -110,8 +110,8 @@ const CreateStory: React.FC = () => {
             <div className="field">
               <label>Privacidade</label>
               <select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
-                <option value="public">🌍 Pública</option>
-                <option value="private">🔒 Privada</option>
+                <option value="public">Pública</option>
+                <option value="private">Privada</option>
               </select>
             </div>
           </div>

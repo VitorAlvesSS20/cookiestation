@@ -1,6 +1,16 @@
 /* ============================================================
-   COOKIESTATION - PROFILE STYLES (COMPLETO)
+   COOKIESTATION - PROFILE STYLES (COMPLETO & CORRIGIDO)
    ============================================================ */
+
+:root {
+  --mocha-dark: #1A120B;
+  --mocha-medium: #8B7E74;
+  --cookie-gold: #D4A373;
+  --cream-bg: #F3EEEB;
+  --cream-light: #FDFBFA;
+  --danger: #E63946;
+  --xp-gold: #f1c40f;
+}
 
 .profile-container {
   max-width: 1000px;
@@ -13,53 +23,146 @@
   background: white;
   padding: 40px;
   border-radius: 25px;
-  border: 1.5px solid #F3EEEB;
+  border: 1.5px solid var(--cream-bg);
   margin-bottom: 50px;
   text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
 }
 
 .avatar-wrapper {
-  width: 110px;
-  height: 110px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   margin: 0 auto 20px;
   background-size: cover;
   background-position: center;
-  border: 3px solid #D4A373; /* Dourado Biscoito */
+  border: 4px solid var(--cookie-gold);
+  background-color: var(--cream-bg);
+}
+
+/* NOVOS ELEMENTOS: XP E STATUS */
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.title-row h1 {
+  font-size: 2.2rem;
+  color: var(--mocha-dark);
+  margin: 0;
+}
+
+.xp-badge {
+  background: var(--xp-gold);
+  color: var(--mocha-dark);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);
+  white-space: nowrap;
+}
+
+.status-bubble {
+  background: #FFF9F0;
+  border-left: 4px solid var(--cookie-gold);
+  padding: 10px 20px;
+  font-style: italic;
+  color: #5d4037;
+  border-radius: 8px;
+  margin: 15px auto;
+  display: inline-block;
+  max-width: 80%;
+  font-size: 0.95rem;
 }
 
 /* FORMULÁRIO DE EDIÇÃO */
 .edit-form-classic {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
   max-width: 500px;
-  margin: 0 auto;
+  margin: 20px auto;
 }
 
 .edit-form-classic input, 
 .edit-form-classic textarea {
-  padding: 12px;
+  padding: 12px 16px;
   border: 1.5px solid #EBE4DE;
   border-radius: 12px;
   font-family: inherit;
-  width: 100%;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.edit-form-classic input:focus, 
+.edit-form-classic textarea:focus {
+  outline: none;
+  border-color: var(--cookie-gold);
 }
 
 .edit-btns {
   display: flex;
   gap: 10px;
   justify-content: center;
+  margin-top: 10px;
 }
 
-.btn-save { background: #1A120B; color: white; padding: 10px 25px; border-radius: 10px; }
-.btn-cancel { background: #F3EEEB; color: #8B7E74; padding: 10px 25px; border-radius: 10px; }
+.btn-save { 
+  background: var(--mocha-dark); 
+  color: white; 
+  padding: 12px 30px; 
+  border-radius: 12px; 
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-cancel { 
+  background: var(--cream-bg); 
+  color: var(--mocha-medium); 
+  padding: 12px 30px; 
+  border-radius: 12px; 
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
 
 /* EXIBIÇÃO DE INFORMAÇÕES */
-.info-display h1 { font-size: 2.2rem; color: #1A120B; margin-bottom: 10px; }
-.location-tag, .web-link { color: #8B7E74; font-size: 0.9rem; margin-bottom: 5px; display: block; }
-.bio-text { color: #8B7E74; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto; }
-.btn-edit-text { color: #D4A373; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.meta-info {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.location-tag { 
+  color: var(--mocha-medium); 
+  font-size: 0.9rem; 
+  font-weight: 500;
+}
+
+.bio-text { 
+  color: var(--mocha-medium); 
+  line-height: 1.6;
+  margin-bottom: 25px; 
+  max-width: 600px; 
+  margin-left: auto; 
+  margin-right: auto; 
+}
+
+.btn-edit-text { 
+  background: none;
+  border: none;
+  color: var(--cookie-gold); 
+  font-weight: 700; 
+  text-decoration: underline; 
+  cursor: pointer; 
+  font-size: 0.95rem;
+}
 
 /* SEÇÃO DE OBRAS */
 .profile-header-actions {
@@ -67,28 +170,39 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  padding: 0 10px;
+}
+
+.profile-header-actions h2 {
+  color: var(--mocha-dark);
+  font-size: 1.5rem;
 }
 
 .btn-new-book {
-  background: #D4A373;
+  background: var(--cookie-gold);
   color: white;
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 12px 24px;
+  border-radius: 14px;
   font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
-/* GRID DE LIVROS (REVISADO) */
+.btn-new-book:hover { transform: scale(1.03); }
+
+/* GRID DE LIVROS */
 .books-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+  gap: 25px;
 }
 
 .book-card-item {
   background: white;
-  border-radius: 20px;
+  border-radius: 22px;
   overflow: hidden;
-  border: 1.5px solid #F3EEEB;
+  border: 1.5px solid var(--cream-bg);
   transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
@@ -96,7 +210,7 @@
 
 .book-card-item:hover { 
   transform: translateY(-8px); 
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 15px 35px rgba(26, 18, 11, 0.08);
 }
 
 .book-visual {
@@ -105,22 +219,23 @@
   background-size: cover;
   background-position: center;
   position: relative;
+  background-color: #eee;
 }
 
 .book-badge {
   position: absolute;
   top: 15px;
   left: 15px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 0.7rem;
   font-weight: 800;
-  color: #1A120B;
+  color: var(--mocha-dark);
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* DETALHES E AÇÕES (BOTÃO DE DELETAR INTEGRADO) */
 .book-details { 
   padding: 20px; 
   flex-grow: 1;
@@ -129,75 +244,81 @@
 }
 
 .book-details h3 { 
-  font-size: 1.2rem; 
-  color: #1A120B; 
+  font-size: 1.15rem; 
+  color: var(--mocha-dark); 
   margin-bottom: 5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.book-details p { color: #8B7E74; font-size: 0.9rem; margin-bottom: 15px; }
+.book-details p { 
+  color: var(--mocha-medium); 
+  font-size: 0.85rem; 
+  margin-bottom: 18px; 
+}
 
 .book-actions {
   display: flex;
   gap: 8px;
-  margin-top: auto; /* Joga os botões sempre para o rodapé do card */
+  margin-top: auto;
 }
 
 .btn-view, .btn-add-cap {
-  flex: 2; /* Ocupam mais espaço */
-  padding: 10px 5px;
+  flex: 2;
+  padding: 10px;
   border-radius: 10px;
   border: none;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.btn-view { background: #1A120B; color: white; }
-.btn-view:hover { opacity: 0.9; }
+.btn-view { background: var(--mocha-dark); color: white; }
+.btn-add-cap { background: var(--cream-bg); color: var(--mocha-dark); }
 
-.btn-add-cap { background: #F3EEEB; color: #1A120B; }
-.btn-add-cap:hover { background: #EBE4DE; }
-
-/* NOVO ESTILO PARA O BOTÃO DE DELETAR NO GRID */
 .btn-delete-book {
-  flex: 1; /* Ocupa menos espaço lateral */
+  flex: 0.8;
   background: #FFF0F0;
   border: 1.5px solid #FFE0E0;
-  color: #E63946;
+  color: var(--danger);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: 0.2s;
+  font-size: 1.1rem;
 }
 
 .btn-delete-book:hover {
-  background: #E63946;
+  background: var(--danger);
   color: white;
-  border-color: #E63946;
 }
 
 /* ZONA DE PERIGO */
 .danger-zone-footer {
   margin-top: 80px;
-  padding-top: 30px;
-  border-top: 1.5px solid #F3EEEB;
+  padding: 40px 0;
+  border-top: 1.5px solid var(--cream-bg);
   text-align: center;
 }
 
 .btn-danger-text {
   background: none;
   border: none;
-  color: #E63946;
+  color: var(--danger);
   font-weight: 700;
   cursor: pointer;
   text-decoration: underline;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  transition: 0.2s;
 }
 
-.btn-danger-text:hover { color: #c0392b; }
+.btn-danger-text:hover { opacity: 1; }
+
+/* Loader Sincronizando */
+.loader {
+  text-align: center;
+  padding: 100px;
+  font-size: 1.2rem;
+  color: var(--mocha-medium);
+}

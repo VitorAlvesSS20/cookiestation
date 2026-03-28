@@ -43,3 +43,5 @@ const StoryManage: React.FC = () => {
     </div>
   );
 };
+
+export default StoryManage;

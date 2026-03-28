@@ -85,7 +85,7 @@ const Login: React.FC = () => {
 
             <button type="submit" className="auth-submit-btn" disabled={loading}>
               {loading ? (
-                <span className="loader">Saindo o café...</span>
+                <span className="loader">Entrando...</span>
               ) : (
                 "Entrar"
               )}
