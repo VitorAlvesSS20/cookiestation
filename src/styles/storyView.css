@@ -1,0 +1,217 @@
+/* Container Principal */
+.story-view-container { 
+  max-width: 1100px; 
+  margin: 60px auto; 
+  padding: 0 30px; 
+}
+
+/* Hero Section (O painel escuro) */
+.story-hero { 
+  display: flex; 
+  gap: 60px; 
+  align-items: flex-start; 
+  margin-bottom: 80px;
+  background-color: #1a140f; /* Fundo café profundo */
+  padding: 50px;
+  border-radius: 12px;
+  border: 1px solid rgba(196, 164, 132, 0.1);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+}
+
+.story-cover-large { 
+  width: 280px; 
+  min-width: 280px;
+  aspect-ratio: 2/3; 
+  background-size: cover; 
+  background-position: center;
+  border-radius: 4px;
+  box-shadow: 10px 10px 30px rgba(0,0,0,0.5);
+  border: 1px solid rgba(245, 240, 235, 0.1);
+}
+
+.story-info-header { flex: 1; }
+
+.badge-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.genre-badge { 
+  background: transparent; 
+  color: #f5f0eb; /* Creme bem claro para legibilidade máxima */
+  padding: 4px 12px; 
+  border-radius: 2px; 
+  font-size: 0.75rem; 
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border: 1px solid #c4a484;
+}
+
+/* Título (Creme sobre escuro) */
+.story-info-header h1 { 
+  font-family: 'Playfair Display', serif;
+  font-size: 3.5rem; 
+  font-weight: 700; 
+  color: #f5f0eb; /* Creme bem claro */
+  margin: 10px 0 25px 0;
+  line-height: 1.1;
+}
+
+.synopsis-box {
+  margin: 30px 0;
+  border-left: 2px solid #c4a484;
+  padding-left: 25px;
+}
+
+/* Sinopse (Ajustado para maior legibilidade no escuro) */
+.synopsis-text { 
+  font-size: 1.1rem; 
+  line-height: 1.8; 
+  color: #d1bfa7; /* Bege suave legível */
+  font-weight: 300;
+}
+
+/* Botões de Ação dentro do Hero */
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.btn-read-now { 
+  background-color: #c4a484; 
+  color: #1a140f; 
+  border: none; 
+  padding: 16px 40px; 
+  border-radius: 4px; 
+  font-weight: 700; 
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-read-now:hover { 
+  background-color: #f5f0eb;
+}
+
+/* CORREÇÃO CRÍTICA NO BOTÃO DE ADICIONAR */
+.btn-add-chapter {
+  background: transparent;
+  border: 1px solid rgba(196, 164, 132, 0.4);
+  color: #f5f0eb; /* Mudei para creme para ser legível no fundo escuro */
+  padding: 16px 30px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-add-chapter:hover {
+  border-color: #f5f0eb;
+  color: #f5f0eb;
+  background-color: rgba(196, 164, 132, 0.1);
+}
+
+/* Seção de Capítulos (Estilo Sumário Formal) */
+.story-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 60px;
+}
+
+/* CORREÇÃO CRÍTICA NO TÍTULO ABAIXO DO HERO */
+.chapters-section h2 { 
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; 
+  color: #1a140f; /* Mudei para marrom escuro para ser legível no fundo claro */
+  margin-bottom: 40px; 
+  position: relative;
+  display: inline-block;
+}
+
+/* Barra lateral dourada que já existia na imagem */
+.chapters-section h2::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 80%;
+  width: 3px;
+  background-color: #c4a484;
+}
+
+.chapter-row { 
+  display: flex; 
+  justify-content: space-between;
+  align-items: center; 
+  padding: 20px 0; 
+  background: transparent; 
+  border-bottom: 1px solid rgba(196, 164, 132, 0.1);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.chapter-row:hover { 
+  padding-left: 10px;
+  border-bottom-color: #c4a484;
+}
+
+.cap-info { display: flex; align-items: center; }
+
+.cap-number { 
+  font-size: 0.9rem; 
+  font-weight: 400; 
+  color: #c4a484; 
+  margin-right: 25px;
+  font-family: 'Courier New', monospace;
+}
+
+/* CORREÇÃO NO TÍTULO DO CAPÍTULO */
+.cap-title { 
+  font-weight: 500; 
+  color: #1a140f; /* Marrom escuro legível */
+  font-size: 1.05rem; 
+}
+
+/* CORREÇÃO NO TEXTO DE 'PUBLICADOS' */
+.empty-state-chapters p {
+  font-size: 0.9rem;
+  color: #5c4a3c; /* Bege acinzentado escuro legível */
+  font-weight: 300;
+}
+
+.chapter-count {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #5c4a3c; /* Bege acinzentado escuro legível */
+  letter-spacing: 1px;
+  margin-top: -15px;
+  display: block;
+  margin-bottom: 25px;
+}
+
+/* CORREÇÃO NO TÍTULO DE CONVERSAS */
+.interaction-section h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; 
+  color: #1a140f; /* Marrom escuro legível */
+  margin-bottom: 40px;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .story-details-grid { grid-template-columns: 1fr; }
+  .story-hero { flex-direction: column; padding: 30px; align-items: center; text-align: center; }
+  .story-cover-large { width: 220px; min-width: 220px; }
+  .synopsis-box { border-left: none; border-top: 1px solid #c4a484; padding: 25px 0 0 0; }
+  .action-buttons { justify-content: center; flex-wrap: wrap; }
+  .badge-row { justify-content: center; }
+  .chapters-section h2::before { display: none; }
+}

@@ -1,0 +1,192 @@
+/* auth.css */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fdf8f5; /* Creme */
+  padding: 20px;
+}
+
+.auth-card {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(60, 42, 33, 0.1);
+  min-height: 550px;
+}
+
+/* Lado Visual */
+.auth-visual {
+  flex: 1;
+  background: linear-gradient(45deg, rgba(60, 42, 33, 0.7), rgba(212, 163, 115, 0.5)),
+            url('/urso.jpg');
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  display: flex;
+  align-items: flex-end;
+  padding: 40px;
+  color: white;
+}
+
+.visual-overlay h3 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  font-family: 'Playfair Display', serif;
+}
+
+.visual-overlay p {
+  opacity: 0.9;
+  font-size: 1rem;
+}
+
+/* Lado do Formulário */
+.auth-form-container {
+  flex: 1.2;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-header h2 {
+  font-size: 1.8rem;
+  color: #3c2a21;
+  margin-bottom: 8px;
+}
+
+.auth-header p {
+  color: #8d7b70;
+  margin-bottom: 32px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #3c2a21;
+}
+
+.input-group input {
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1.5px solid #eee6e2;
+  background-color: #fafafa;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #d4a373;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.1);
+}
+
+/* Erro */
+.auth-error-message {
+  background-color: #fff1f0;
+  color: #cf1322;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #ffa39e;
+}
+
+/* Botão */
+.auth-submit-btn {
+  background-color: #3c2a21;
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  background-color: #5d4037;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(60, 42, 33, 0.2);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Footer */
+.auth-footer {
+  margin-top: 32px;
+  text-align: center;
+  color: #8d7b70;
+  font-size: 0.9rem;
+}
+
+.auth-footer button {
+  background: none;
+  border: none;
+  color: #d4a373;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-left: 5px;
+}
+
+/* Adicione ao seu auth.css existente */
+
+.register-visual {
+  background: linear-gradient(45deg, rgba(60, 42, 33, 0.7), rgba(212, 163, 115, 0.5)),
+            url('/fofo.jpg');
+  background-blend-mode: multiply;
+}
+
+.input-group-row {
+  display: flex;
+  gap: 15px;
+}
+
+.input-group-row .input-group {
+  flex: 1;
+}
+
+/* Ajuste para telas pequenas: empilhar as senhas */
+@media (max-width: 480px) {
+  .input-group-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .auth-visual {
+    display: none;
+  }
+  .auth-card {
+    max-width: 450px;
+  }
+}

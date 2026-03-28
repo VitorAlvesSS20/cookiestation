@@ -1,0 +1,102 @@
+/* Layout Geral */
+.reading-page-layout {
+  background-color: #FDFBF9; /* Cor de papel para não cansar a vista */
+  min-height: 100vh;
+  padding-top: 80px; /* Espaço para o header fixo */
+}
+
+/* Header Fixo */
+.reading-fixed-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #EEE6E0;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+  padding: 0 20px;
+}
+
+.nav-content {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-exit {
+  background: #1A120B;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-exit:hover { transform: scale(1.05); background: #D4A373; }
+
+/* Texto de leitura */
+.reading-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding-bottom: 100px;
+}
+
+.article-header h1 {
+  font-size: 2.8rem;
+  text-align: center;
+  color: #1A120B;
+  margin-bottom: 10px;
+}
+
+.article-body p {
+  font-family: 'Georgia', serif;
+  font-size: 1.3rem;
+  line-height: 1.9;
+  color: #2D241E;
+  margin-bottom: 25px;
+  text-align: justify;
+}
+
+/* Rodapé de Navegação */
+.reading-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 50px;
+  gap: 15px;
+}
+
+.nav-btn {
+  background: #F3EEEB;
+  border: 1.5px solid #D4A373;
+  padding: 12px 25px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #D4A373;
+  cursor: pointer;
+}
+
+.nav-btn.primary {
+  background: #D4A373;
+  color: white;
+}
+
+.btn-finish-reading {
+  background: transparent;
+  border: none;
+  color: #8B7E74;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #CCC; color: #999; }

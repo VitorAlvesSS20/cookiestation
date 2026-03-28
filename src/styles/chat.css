@@ -1,0 +1,103 @@
+.chat-display {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a140f;
+}
+
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.messages-area {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* Textura sutil de fundo para parecer papel de carta */
+  background-image: radial-gradient(rgba(196, 164, 132, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Balões de Mensagem */
+.msg-bubble {
+  max-width: 75%;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  border-radius: 12px;
+}
+
+/* Mensagem enviada pelo usuário (Destaque Dourado) */
+.msg-bubble.sent {
+  align-self: flex-end;
+  background-color: #c4a484; 
+  color: #1a140f; /* Texto escuro para contraste alto sobre o dourado */
+  border-bottom-right-radius: 2px;
+  box-shadow: 4px 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Mensagem recebida (Discreta) */
+.msg-bubble.received {
+  align-self: flex-start;
+  background-color: #2d241d;
+  color: #f5f0eb; /* Texto creme sobre fundo escuro */
+  border-bottom-left-radius: 2px;
+  border: 1px solid rgba(196, 164, 132, 0.1);
+}
+
+/* Barra de Input Inferior */
+.chat-input {
+  padding: 25px 30px;
+  background-color: #231c15;
+  display: flex;
+  gap: 15px;
+  border-top: 1px solid rgba(196, 164, 132, 0.1);
+}
+
+.chat-input input {
+  flex: 1;
+  background-color: #1a140f;
+  border: 1px solid rgba(196, 164, 132, 0.2);
+  padding: 12px 20px;
+  border-radius: 6px;
+  color: #f5f0eb;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.chat-input input:focus {
+  border-color: #c4a484;
+}
+
+.chat-input button {
+  background-color: #c4a484;
+  color: #1a140f;
+  border: none;
+  padding: 0 25px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chat-input button:hover {
+  background-color: #f5f0eb;
+  transform: translateY(-2px);
+}
+
+/* Scrollbar Estilizada */
+.messages-area::-webkit-scrollbar {
+  width: 5px;
+}
+
+.messages-area::-webkit-scrollbar-thumb {
+  background-color: rgba(196, 164, 132, 0.2);
+  border-radius: 10px;
+}

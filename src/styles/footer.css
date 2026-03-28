@@ -1,0 +1,130 @@
+.footer-compact {
+  background-color: #1a140f; /* Marrom café profundo, mais quente que o preto */
+  border-top: 1px solid rgba(196, 164, 132, 0.2);
+  padding: 40px 0 25px 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 80px;
+  position: relative;
+}
+
+.footer-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 30px;
+}
+
+.footer-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Alinhamento centralizado fica mais elegante para footers baixos */
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+/* Marca Reestilizada */
+.footer-brand-mini .logo-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.footer-brand-mini .logo-group:hover {
+  opacity: 0.8;
+}
+
+.coffee-icon {
+  font-size: 1.5rem;
+  filter: sepia(0.5); /* Suaviza o emoji para combinar com o tema */
+}
+
+.footer-brand-mini h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  color: #f5f0eb; /* Creme bem claro para leitura perfeita */
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.footer-brand-mini h2 span { 
+  color: #c4a484; /* Dourado café em vez de vermelho */
+}
+
+.footer-brand-mini p {
+  font-size: 0.85rem;
+  color: #a89682; /* Bege médio */
+  margin: 4px 0 0 32px; /* Alinhado com o texto do logo */
+  font-weight: 300;
+}
+
+/* Navegação em Linha (Horizontal) */
+.footer-nav-groups {
+  display: flex;
+  gap: 40px;
+}
+
+.nav-col h4 {
+  color: #c4a484;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.nav-col span {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: #d1bfa7;
+  margin-right: 20px; /* Links lado a lado economizam altura */
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-col span:hover {
+  color: #f5f0eb;
+  transform: translateY(-2px);
+}
+
+/* Barra Inferior */
+.footer-bottom-bar {
+  margin-top: 30px;
+}
+
+.footer-line {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(196, 164, 132, 0.2), transparent);
+  margin-bottom: 20px;
+}
+
+.bottom-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #7a6a5c;
+}
+
+.bottom-content strong { 
+  color: #a89682;
+  font-weight: 500;
+}
+
+/* Animação suave */
+.fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .footer-main-row { flex-direction: column; text-align: center; }
+  .footer-brand-mini p { margin: 4px 0 0 0; }
+  .footer-nav-groups { gap: 20px; flex-direction: column; }
+  .nav-col span { margin: 5px 10px; }
+}

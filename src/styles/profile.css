@@ -1,0 +1,203 @@
+/* ============================================================
+   COOKIESTATION - PROFILE STYLES (COMPLETO)
+   ============================================================ */
+
+.profile-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+/* HEADER DO PERFIL */
+.profile-card-header {
+  background: white;
+  padding: 40px;
+  border-radius: 25px;
+  border: 1.5px solid #F3EEEB;
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.avatar-wrapper {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid #D4A373; /* Dourado Biscoito */
+}
+
+/* FORMULÁRIO DE EDIÇÃO */
+.edit-form-classic {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.edit-form-classic input, 
+.edit-form-classic textarea {
+  padding: 12px;
+  border: 1.5px solid #EBE4DE;
+  border-radius: 12px;
+  font-family: inherit;
+  width: 100%;
+}
+
+.edit-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn-save { background: #1A120B; color: white; padding: 10px 25px; border-radius: 10px; }
+.btn-cancel { background: #F3EEEB; color: #8B7E74; padding: 10px 25px; border-radius: 10px; }
+
+/* EXIBIÇÃO DE INFORMAÇÕES */
+.info-display h1 { font-size: 2.2rem; color: #1A120B; margin-bottom: 10px; }
+.location-tag, .web-link { color: #8B7E74; font-size: 0.9rem; margin-bottom: 5px; display: block; }
+.bio-text { color: #8B7E74; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto; }
+.btn-edit-text { color: #D4A373; font-weight: 700; text-decoration: underline; cursor: pointer; }
+
+/* SEÇÃO DE OBRAS */
+.profile-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.btn-new-book {
+  background: #D4A373;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+/* GRID DE LIVROS (REVISADO) */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.book-card-item {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1.5px solid #F3EEEB;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.book-card-item:hover { 
+  transform: translateY(-8px); 
+  box-shadow: var(--shadow-md);
+}
+
+.book-visual {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.book-badge {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1A120B;
+  text-transform: uppercase;
+}
+
+/* DETALHES E AÇÕES (BOTÃO DE DELETAR INTEGRADO) */
+.book-details { 
+  padding: 20px; 
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.book-details h3 { 
+  font-size: 1.2rem; 
+  color: #1A120B; 
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-details p { color: #8B7E74; font-size: 0.9rem; margin-bottom: 15px; }
+
+.book-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto; /* Joga os botões sempre para o rodapé do card */
+}
+
+.btn-view, .btn-add-cap {
+  flex: 2; /* Ocupam mais espaço */
+  padding: 10px 5px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-view { background: #1A120B; color: white; }
+.btn-view:hover { opacity: 0.9; }
+
+.btn-add-cap { background: #F3EEEB; color: #1A120B; }
+.btn-add-cap:hover { background: #EBE4DE; }
+
+/* NOVO ESTILO PARA O BOTÃO DE DELETAR NO GRID */
+.btn-delete-book {
+  flex: 1; /* Ocupa menos espaço lateral */
+  background: #FFF0F0;
+  border: 1.5px solid #FFE0E0;
+  color: #E63946;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-delete-book:hover {
+  background: #E63946;
+  color: white;
+  border-color: #E63946;
+}
+
+/* ZONA DE PERIGO */
+.danger-zone-footer {
+  margin-top: 80px;
+  padding-top: 30px;
+  border-top: 1.5px solid #F3EEEB;
+  text-align: center;
+}
+
+.btn-danger-text {
+  background: none;
+  border: none;
+  color: #E63946;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.btn-danger-text:hover { color: #c0392b; }

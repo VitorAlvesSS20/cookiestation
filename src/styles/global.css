@@ -1,0 +1,201 @@
+/* Importando apenas a Poppins em todos os pesos necessários */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* --- PALETA DE CORES (Café & Creme) --- */
+  --mocha-dark: #3C2A21;       /* Marrom Espresso Profundo */
+  --espresso-accent: #5D4037;   /* Marrom Médio */
+  --cookie-gold: #D4A373;      /* Dourado Biscoito / Caramelo */
+  --latte-cream: #FDF8F5;      /* Fundo Creme Suave */
+  --paper-white: #FFFFFF;      /* Branco Puro para Cards */
+  
+  /* --- ESTADOS DE UI --- */
+  --text-main: #3C2A21;
+  --text-muted: #8D7B70;
+  --error: #E74C3C;
+  --success: #27AE60;
+  
+  /* --- DESIGN SYSTEM --- */
+  --font-main: 'Poppins', sans-serif;
+  --shadow-sm: 0 4px 12px rgba(60, 42, 33, 0.05);
+  --shadow-md: 0 12px 30px rgba(60, 42, 33, 0.1);
+  --radius-lg: 24px;
+  --radius-md: 12px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- RESET TOTAL & PADRONIZAÇÃO --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* Forçando a Poppins em TUDO para acabar com o incômodo visual */
+  font-family: var(--font-main) !important; 
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth; /* Rolagem suave entre seções */
+}
+
+body {
+  background-color: var(--latte-cream);
+  color: var(--text-main);
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* --- TIPOGRAFIA UNIFICADA --- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--mocha-dark);
+  font-weight: 800; /* Extra Bold para títulos */
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+p, span, label, input, textarea, button {
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+/* --- SELEÇÃO DE TEXTO TEMÁTICA (O "Extra" que prometi) --- */
+::selection {
+  background-color: var(--cookie-gold);
+  color: white;
+}
+
+/* --- BARRA DE ROLAGEM CUSTOMIZADA --- */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--latte-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cookie-gold);
+  border-radius: 10px;
+  border: 3px solid var(--latte-cream); /* Cria um efeito de margem na barra */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--espresso-accent);
+}
+
+/* --- ELEMENTOS GLOBAIS --- */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  background: none;
+  transition: var(--transition);
+}
+
+input, textarea {
+  outline: none;
+  border: 1px solid #eee6e2;
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  transition: var(--transition);
+}
+
+input:focus, textarea:focus {
+  border-color: var(--cookie-gold);
+  box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.1);
+}
+
+/* --- ANIMAÇÕES DE ENTRADA (O toque especial) --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* --- UTILITÁRIOS --- */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+
+img {
+  border-radius: var(--radius-md);
+  filter: sepia(10%) contrast(105%); /* Dá um tom levemente aquecido para combinar com o café */
+  transition: var(--transition);
+}
+
+img:hover {
+  filter: sepia(0%) contrast(110%);
+}
+
+/* --- ESTRUTURA DO APP (SIDEBAR + CONTEÚDO) --- */
+
+/* Container que segura o Sidebar e o Main */
+.app-with-sidebar {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden; /* Impede scroll no body, o scroll fica no main */
+}
+
+/* Quando não tem sidebar (Login/Leitura) */
+.app-full-canvas {
+  width: 100vw;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Área da direita onde as páginas aparecem */
+.content-area {
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto; /* O scroll da página acontece aqui dentro */
+  padding: 40px;
+  background-color: var(--latte-cream);
+  position: relative;
+}
+
+/* Loader Global centralizado com sua paleta */
+.global-loader {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background-color: var(--latte-cream);
+  color: var(--mocha-dark);
+  font-weight: 700;
+  gap: 15px;
+}
+
+/* Ajuste para telas mobile */
+@media (max-width: 768px) {
+  .app-with-sidebar {
+    flex-direction: column; /* No celular o sidebar pode virar um menu superior ou sumir */
+  }
+  .content-area {
+    padding: 20px;
+  }
+}
