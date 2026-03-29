@@ -1,50 +1,80 @@
-/* Layout Principal das Mensagens */
+/* ========================= */
+/* LAYOUT PRINCIPAL */
+/* ========================= */
 .messages-layout {
   display: flex;
-  height: calc(100vh - 120px); 
+  height: calc(100vh - 120px);
   max-width: 1200px;
   margin: 40px auto;
-  background-color: #1a140f; /* Fundo Mocha Profundo */
-  border-radius: 12px;
+  background-color: #1a140f;
+  border-radius: 16px;
   border: 1px solid rgba(196, 164, 132, 0.1);
   overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 
-/* Sidebar de Conversas */
+/* ========================= */
+/* SIDEBAR */
+/* ========================= */
 .inbox-sidebar {
   width: 350px;
-  background-color: #231c15; /* Tom levemente diferente para separar */
+  min-width: 300px;
+  background-color: #231c15;
   border-right: 1px solid rgba(196, 164, 132, 0.1);
   display: flex;
   flex-direction: column;
 }
 
-.inbox-title {
-  padding: 30px;
+/* HEADER NOVO */
+.inbox-header {
+  padding: 20px;
   border-bottom: 1px solid rgba(196, 164, 132, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.inbox-title h2 {
+.inbox-header h2 {
   font-family: 'Playfair Display', serif;
-  color: #f5f0eb; /* Creme claro */
-  font-size: 1.5rem;
+  color: #f5f0eb;
+  font-size: 1.4rem;
   margin: 0;
 }
 
+/* BOTÃO NOVO CHAT */
+.new-chat-btn {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #c4a484;
+  color: #1a140f;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.new-chat-btn:hover {
+  background: #a8896a;
+}
+
+/* ========================= */
+/* LISTA */
+/* ========================= */
 .inbox-list {
   flex: 1;
   overflow-y: auto;
 }
 
+/* ITEM */
 .inbox-item {
   display: flex;
   align-items: center;
-  padding: 20px 30px;
-  gap: 15px;
+  padding: 16px 20px;
+  gap: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   border-bottom: 1px solid rgba(196, 164, 132, 0.05);
+  position: relative;
 }
 
 .inbox-item:hover {
@@ -53,39 +83,73 @@
 
 .inbox-item.active {
   background-color: #2d241d;
-  border-left: 4px solid #c4a484; /* Indicador dourado */
+  border-left: 4px solid #c4a484;
 }
 
+/* AVATAR */
 .inbox-avatar {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   background: #1a140f;
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   border: 1px solid #c4a484;
+  flex-shrink: 0;
 }
 
-.inbox-details .inbox-name {
+/* TEXTO */
+.inbox-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-name {
   color: #f5f0eb;
   font-weight: 600;
-  margin: 0 0 5px 0;
-  font-size: 1rem;
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
 }
 
-.inbox-details .inbox-preview {
-  color: #a89682; /* Bege legível */
-  font-size: 0.85rem;
+.inbox-preview {
+  color: #a89682;
+  font-size: 0.8rem;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
 }
 
-.no-chat-selected, .no-chats {
+/* BOTÃO DELETE */
+.delete-chat {
+  background: none;
+  border: none;
+  color: #cf1322;
+  cursor: pointer;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: 0.2s;
+}
+
+.inbox-item:hover .delete-chat {
+  opacity: 1;
+}
+
+/* ========================= */
+/* ÁREA DO CHAT */
+/* ========================= */
+.chat-display {
+  flex: 1;
+  background: #140f0b;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ESTADOS */
+.no-chat-selected,
+.no-chats {
   flex: 1;
   display: flex;
   align-items: center;
@@ -94,4 +158,68 @@
   font-style: italic;
   text-align: center;
   padding: 40px;
+}
+
+/* ========================= */
+/* RESPONSIVIDADE */
+/* ========================= */
+
+/* TABLET */
+@media (max-width: 900px) {
+  .messages-layout {
+    margin: 0;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .inbox-sidebar {
+    width: 280px;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 700px) {
+  .messages-layout {
+    flex-direction: column;
+  }
+
+  .inbox-sidebar {
+    width: 100%;
+    height: 40%;
+    border-right: none;
+    border-bottom: 1px solid rgba(196, 164, 132, 0.1);
+  }
+
+  .chat-display {
+    height: 60%;
+  }
+
+  .inbox-item {
+    padding: 14px;
+  }
+
+  .inbox-avatar {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* MOBILE PEQUENO */
+@media (max-width: 480px) {
+  .inbox-header {
+    padding: 15px;
+  }
+
+  .new-chat-btn {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+
+  .inbox-name {
+    font-size: 0.85rem;
+  }
+
+  .inbox-preview {
+    font-size: 0.75rem;
+  }
 }

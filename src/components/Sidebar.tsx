@@ -6,65 +6,105 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { Toast, ConfirmDialog } from "../utils/swal";
 import "../styles/sidebar.css";
 
+type UserData = {
+  photoURL?: string;
+  displayName?: string;
+};
+
 const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [liveUserData, setLiveUserData] = useState<{
-    photoURL?: string;
-    displayName?: string;
-  } | null>(null);
-
+  const [liveUserData, setLiveUserData] = useState<UserData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  /* ========================= */
+  /* LISTENER TEMPO REAL USER */
+  /* ========================= */
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      setLiveUserData(null);
+      return;
+    }
 
-    const unsub = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-      if (docSnap.exists()) {
-        setLiveUserData(docSnap.data());
+    const unsubscribe = onSnapshot(
+      doc(db, "users", user.uid),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data() as UserData;
+          setLiveUserData(data);
+        } else {
+          setLiveUserData(null);
+        }
+      },
+      (error) => {
+        console.error("Erro ao escutar usuário:", error);
       }
-    });
+    );
 
-    return () => unsub();
+    return () => unsubscribe();
   }, [user?.uid]);
 
+  /* ========================= */
+  /* LOGOUT */
+  /* ========================= */
   const handleLogout = async () => {
     const result = await ConfirmDialog(
       "Sair da Estação?",
       "Você precisará logar novamente para acessar sua estante."
     );
 
-    if (result.isConfirmed) {
-      try {
-        await logout();
-        Toast.fire({
-          icon: "success",
-          title: "Até logo, escritor! 🚪",
-        });
-        navigate("/login");
-      } catch (e) {
-        console.error("Erro ao deslogar", e);
-        Toast.fire({
-          icon: "error",
-          title: "Houve um erro ao tentar sair.",
-        });
-      }
+    if (!result.isConfirmed) return;
+
+    try {
+      await logout();
+
+      Toast.fire({
+        icon: "success",
+        title: "Até logo, escritor! 🚪",
+      });
+
+      navigate("/login");
+    } catch (e) {
+      console.error("Erro ao deslogar", e);
+
+      Toast.fire({
+        icon: "error",
+        title: "Houve um erro ao tentar sair.",
+      });
     }
   };
 
-  // 👉 Fecha o menu ao navegar
+  /* ========================= */
+  /* NAVIGATION */
+  /* ========================= */
   const handleNavigate = (path: string) => {
     navigate(path);
     setIsOpen(false);
   };
 
+  /* ========================= */
+  /* FALLBACK AVATAR */
+  /* ========================= */
+  const avatar =
+    liveUserData?.photoURL ||
+    user?.photoURL ||
+    "https://ui-avatars.com/api/?name=User&background=6b4f3b&color=fff";
+
+  const name =
+    liveUserData?.displayName ||
+    user?.displayName ||
+    "Escritor";
+
+  /* ========================= */
+  /* UI */
+  /* ========================= */
   return (
     <>
       {/* BOTÃO HAMBURGUER */}
       <button
         className={`hamburger ${isOpen ? "active" : ""}`}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
       >
         <span />
         <span />
@@ -72,9 +112,12 @@ const Sidebar: React.FC = () => {
       </button>
 
       {/* OVERLAY */}
-      {isOpen && <div className="overlay" onClick={() => setIsOpen(false)} />}
+      {isOpen && (
+        <div className="overlay" onClick={() => setIsOpen(false)} />
+      )}
 
       <aside className={`sidebar-container ${isOpen ? "open" : ""}`}>
+        {/* LOGO */}
         <div className="sidebar-logo" onClick={() => handleNavigate("/")}>
           <span className="logo-emoji">🍪</span>
           <div className="logo-text-wrapper">
@@ -82,6 +125,7 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
 
+        {/* NAV */}
         <nav className="sidebar-nav">
           <NavLink
             to="/"
@@ -112,26 +156,30 @@ const Sidebar: React.FC = () => {
           >
             Criar Nova História
           </NavLink>
+
+          <NavLink
+            to="/messages"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
+          >
+            Comunidade
+          </NavLink>
         </nav>
 
+        {/* FOOTER */}
         <div className="sidebar-footer">
           {user && (
             <div className="user-info">
               <img
-                src={
-                  liveUserData?.photoURL ||
-                  user.photoURL ||
-                  "https://via.placeholder.com/40"
-                }
+                src={avatar}
                 alt="Avatar"
                 className="user-avatar"
               />
+
               <div className="user-text">
-                <span className="user-name">
-                  {liveUserData?.displayName ||
-                    user.displayName ||
-                    "Escritor"}
-                </span>
+                <span className="user-name">{name}</span>
                 <span className="user-email">{user.email}</span>
               </div>
             </div>
