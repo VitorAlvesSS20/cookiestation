@@ -1,13 +1,17 @@
-/* home.css - Versão Premium de Alto Contraste */
+/* home.css - Responsivo Premium */
 
 :root {
   --cookie-gold: #D4A373;
-  --mocha-dark: #1A120B;      /* Texto quase preto para contraste máximo */
-  --mocha-medium: #3C2A21;    /* Para títulos secundários */
-  --text-body: #4F3B30;       /* Texto de corpo nítido e legível */
-  --text-muted: #6B5D55;      /* Metadados ainda visíveis */
-  --latte-bg: #FDFBF7;        /* Fundo claríssimo para destacar os cards brancos */
+  --mocha-dark: #1A120B;
+  --mocha-medium: #3C2A21;
+  --text-body: #4F3B30;
+  --text-muted: #6B5D55;
+  --latte-bg: #FDFBF7;
 }
+
+/* ===================== */
+/* CONTAINER */
+/* ===================== */
 
 .home-container {
   max-width: 1400px;
@@ -16,12 +20,15 @@
   background-color: var(--latte-bg);
 }
 
-/* HERO BANNER - FOCO NA LEITURA */
+/* ===================== */
+/* HERO */
+/* ===================== */
+
 .hero-banner {
-  height: 480px; /* Aumentado um pouco para dar imponência */
+  height: 480px;
   border-radius: 30px;
   margin: 20px 0 60px 0;
-  background-image: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+  background-image: url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570');
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -30,7 +37,12 @@
 }
 
 .hero-overlay {
-  background: linear-gradient(to right, rgba(26, 18, 11, 0.95), rgba(26, 18, 11, 0.4), transparent);
+  background: linear-gradient(
+    to right,
+    rgba(26, 18, 11, 0.95),
+    rgba(26, 18, 11, 0.4),
+    transparent
+  );
   height: 100%;
   display: flex;
   align-items: center;
@@ -42,17 +54,16 @@
   color: white;
 }
 
-.hero-content h1 { 
-  font-size: 3.2rem; 
-  margin: 15px 0; 
-  line-height: 1.1; 
+.hero-content h1 {
+  font-size: 3.2rem;
+  margin: 15px 0;
+  line-height: 1.1;
   font-weight: 900;
   text-shadow: 0 2px 15px rgba(0,0,0,0.4);
 }
 
-.hero-content p { 
-  font-size: 1.25rem; 
-  opacity: 1; 
+.hero-content p {
+  font-size: 1.25rem;
   margin-bottom: 35px;
   font-weight: 500;
   color: #FDFBF7;
@@ -60,7 +71,7 @@
 
 .badge {
   background: var(--cookie-gold);
-  color: #1A120B; /* Texto escuro no fundo dourado para ler melhor */
+  color: #1A120B;
   padding: 6px 16px;
   border-radius: 50px;
   font-size: 0.85rem;
@@ -69,19 +80,26 @@
   letter-spacing: 1px;
 }
 
-/* GRID E CARDS - CONTRASTE FORTE */
-.section-header { 
-  margin-bottom: 45px; 
+/* ===================== */
+/* SEÇÃO */
+/* ===================== */
+
+.section-header {
+  margin-bottom: 45px;
   border-left: 5px solid var(--cookie-gold);
   padding-left: 20px;
 }
 
-.section-header h2 { 
-  color: var(--mocha-dark); 
-  font-size: 2.2rem; 
-  font-weight: 900; 
+.section-header h2 {
+  color: var(--mocha-dark);
+  font-size: 2.2rem;
+  font-weight: 900;
   margin: 0;
 }
+
+/* ===================== */
+/* GRID */
+/* ===================== */
 
 .stories-grid {
   display: grid;
@@ -89,8 +107,12 @@
   gap: 40px;
 }
 
+/* ===================== */
+/* CARD */
+/* ===================== */
+
 .story-card {
-  background: #FFFFFF; /* Branco puro */
+  background: #FFFFFF;
   border-radius: 24px;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -112,7 +134,6 @@
   background-size: cover;
   background-position: center;
   position: relative;
-  transition: transform 0.5s ease;
 }
 
 .card-badge {
@@ -128,61 +149,75 @@
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.card-content { 
-  padding: 25px; 
-  flex-grow: 1; 
-  display: flex; 
-  flex-direction: column; 
+.card-content {
+  padding: 25px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.card-author { 
-  display: flex; 
-  align-items: center; 
-  gap: 10px; 
-  margin-bottom: 15px; 
+.card-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
-.card-author img { 
-  width: 28px; 
-  height: 28px; 
-  border-radius: 50%; 
+.card-author img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   border: 2px solid var(--latte-bg);
 }
 
-.card-author span { 
-  font-size: 0.95rem; 
-  font-weight: 800; /* Autor agora tem peso forte */
-  color: var(--mocha-medium); 
+.card-author span {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--mocha-medium);
 }
 
-.card-content h3 { 
-  font-size: 1.5rem; /* Título maior */
-  color: var(--mocha-dark); 
-  margin-bottom: 12px; 
+.card-content h3 {
+  font-size: 1.5rem;
+  color: var(--mocha-dark);
+  margin-bottom: 12px;
   line-height: 1.2;
   font-weight: 800;
 }
 
-.card-meta { 
-  margin-top: auto; 
-  display: flex; 
-  align-items: center; 
-  gap: 10px; 
-  font-size: 0.9rem; 
-  color: var(--text-muted); 
+.card-meta {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
-.dot { 
+.dot {
   color: var(--cookie-gold);
   font-size: 1.2rem;
 }
 
-/* LOADING STATE */
-.loading-state { text-align: center; padding: 120px 0; color: var(--mocha-dark); }
-.coffee-cup { font-size: 4rem; margin-bottom: 20px; }
+/* ===================== */
+/* LOADING */
+/* ===================== */
 
-/* BOTÃO DE AÇÃO (Caso use na Home) */
+.loading-state {
+  text-align: center;
+  padding: 120px 0;
+  color: var(--mocha-dark);
+}
+
+.coffee-cup {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+/* ===================== */
+/* BOTÃO */
+/* ===================== */
+
 .btn-primary-home {
   background: var(--cookie-gold);
   color: #1A120B;
@@ -199,4 +234,90 @@
   background: var(--mocha-dark);
   color: white;
   transform: scale(1.05);
+}
+
+/* ===================== */
+/* RESPONSIVIDADE */
+/* ===================== */
+
+/* TABLET */
+@media (max-width: 1024px) {
+  .hero-banner {
+    height: 380px;
+  }
+
+  .hero-overlay {
+    padding: 0 40px;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .stories-grid {
+    gap: 25px;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .home-container {
+    padding: 0 15px 60px 15px;
+  }
+
+  .hero-banner {
+    height: 320px;
+    border-radius: 20px;
+  }
+
+  .hero-overlay {
+    padding: 20px;
+    background: rgba(26, 18, 11, 0.75); /* overlay mais forte */
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+
+  .stories-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .card-image {
+    height: 220px;
+  }
+}
+
+/* MOBILE PEQUENO */
+@media (max-width: 480px) {
+  .hero-banner {
+    height: 280px;
+  }
+
+  .hero-content h1 {
+    font-size: 1.6rem;
+  }
+
+  .hero-content p {
+    font-size: 0.9rem;
+  }
+
+  .btn-primary-home {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+  }
 }

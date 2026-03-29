@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { db } from "../services/firebase";
-import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, Timestamp } from "firebase/firestore";
+import { 
+  collection, addDoc, query, orderBy, onSnapshot, 
+  serverTimestamp, Timestamp, doc, getDoc 
+} from "firebase/firestore";
 import { Toast } from "../utils/swal";
 import "../styles/comments.css";
 
@@ -23,7 +26,26 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
+  
+  // Estado para armazenar a foto corrigida do usuário logado
+  const [currentUserData, setCurrentUserData] = useState<{ photoURL?: string }>({});
 
+  // 1. Busca dados atualizados do usuário logado (Firestore)
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchUserData = async () => {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        setCurrentUserData(userSnap.data());
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
+
+  // 2. Listener dos Comentários
   useEffect(() => {
     if (!storyId) return;
 
@@ -39,7 +61,7 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
       setComments(fetchedComments);
       setLoading(false);
     }, (error) => {
-      console.error(error);
+      console.error("Erro ao carregar comentários:", error);
       setLoading(false);
     });
 
@@ -59,11 +81,13 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
     try {
       const commentsRef = collection(db, "stories", storyId, "comments");
       
+      const finalAvatar = currentUserData.photoURL || user.photoURL || `https://api.dicebear.com/8.x/notionists/svg?seed=${user.uid}`;
+
       const commentData = {
         text: newComment,
         userId: user.uid,
         userName: user.displayName || "Cozinheiro Anônimo",
-        userAvatar: user.photoURL || `https://api.dicebear.com/8.x/notionists/svg?seed=${user.uid}`,
+        userAvatar: finalAvatar,
         createdAt: serverTimestamp(),
       };
 
@@ -76,9 +100,13 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
         timer: 2000
       });
     } catch (error) {
+      console.error(error);
       Toast.fire({ icon: 'error', title: 'Erro ao servir seu comentário.' });
     }
   };
+
+  // Avatar para exibição no formulário
+  const formAvatar = currentUserData.photoURL || user?.photoURL || `https://api.dicebear.com/8.x/notionists/svg?seed=${user?.uid}`;
 
   return (
     <div className="comments-section">
@@ -86,7 +114,12 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
 
       {user ? (
         <form onSubmit={handleSubmitComment} className="comment-form">
-          <img src={user.photoURL || `https://api.dicebear.com/8.x/notionists/svg?seed=${user.uid}`} alt="Avatar" className="comment-avatar" />
+          <img 
+            src={formAvatar} 
+            alt="Seu Avatar" 
+            className="comment-avatar" 
+            onError={(e) => (e.currentTarget.src = `https://api.dicebear.com/8.x/notionists/svg?seed=${user.uid}`)}
+          />
           <div className="form-group">
             <textarea
               value={newComment}
@@ -95,7 +128,7 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
               rows={3}
             />
             <button type="submit" className="btn-comment" disabled={!newComment.trim()}>
-              Servir Comentário 🍪
+              Comentar
             </button>
           </div>
         </form>
@@ -113,7 +146,12 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
         <div className="comments-list">
           {comments.map((comment) => (
             <div key={comment.id} className="comment-item fade-in">
-              <img src={comment.userAvatar} alt={comment.userName} className="comment-avatar" />
+              <img 
+                src={comment.userAvatar} 
+                alt={comment.userName} 
+                className="comment-avatar" 
+                onError={(e) => (e.currentTarget.src = `https://api.dicebear.com/8.x/notionists/svg?seed=${comment.userId}`)}
+              />
               <div className="comment-content">
                 <div className="comment-header">
                   <span className="comment-author">{comment.userName}</span>

@@ -1,4 +1,6 @@
-/* storyDetail.css */
+/* ===================== */
+/* LAYOUT GERAL */
+/* ===================== */
 
 .detail-page {
   min-height: 100vh;
@@ -7,6 +9,10 @@
   display: flex;
   justify-content: center;
 }
+
+/* ===================== */
+/* CARD */
+/* ===================== */
 
 .detail-card {
   width: 100%;
@@ -20,6 +26,10 @@
   flex-direction: column;
 }
 
+/* ===================== */
+/* HEADER */
+/* ===================== */
+
 .detail-header {
   padding: 25px 40px;
   background: #fdfcfb;
@@ -27,6 +37,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
 .back-btn {
@@ -36,6 +47,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s;
+  white-space: nowrap;
 }
 
 .back-btn:hover {
@@ -51,6 +63,10 @@
   color: #3c2a21;
   border: 1px solid #d4a373;
 }
+
+/* ===================== */
+/* CONTEÚDO */
+/* ===================== */
 
 .detail-main {
   padding: 40px;
@@ -69,7 +85,10 @@
   font-weight: 700;
 }
 
-/* Inputs Estilizados */
+/* ===================== */
+/* INPUT TÍTULO */
+/* ===================== */
+
 .detail-title-input {
   width: 100%;
   border: none;
@@ -88,6 +107,10 @@
   border-bottom-color: #d4a373;
 }
 
+/* ===================== */
+/* TEXTAREA */
+/* ===================== */
+
 .detail-content-area {
   width: 100%;
   min-height: 400px;
@@ -105,14 +128,20 @@
   outline: none;
 }
 
-/* Estilo para quando NÃO é o dono (Modo Leitura) */
-.view-mode input, 
+/* ===================== */
+/* MODO VISUALIZAÇÃO */
+/* ===================== */
+
+.view-mode input,
 .view-mode textarea {
   cursor: default;
   color: #3c2a21;
 }
 
-/* Rodapé de Ações */
+/* ===================== */
+/* AÇÕES */
+/* ===================== */
+
 .detail-actions {
   padding: 30px 40px;
   background: #fdfcfb;
@@ -120,6 +149,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .save-btn {
@@ -155,7 +185,10 @@
   border-color: #cf1322;
 }
 
-/* Loader */
+/* ===================== */
+/* LOADING */
+/* ===================== */
+
 .loading-container {
   height: 100vh;
   display: flex;
@@ -175,4 +208,85 @@
 @keyframes bounce {
   from { transform: translateY(0); }
   to { transform: translateY(-10px); }
+}
+
+/* ===================== */
+/* RESPONSIVIDADE */
+/* ===================== */
+
+/* TABLET */
+@media (max-width: 1024px) {
+  .detail-main {
+    padding: 30px;
+  }
+
+  .detail-title-input {
+    font-size: 1.6rem;
+  }
+
+  .detail-content-area {
+    font-size: 1.05rem;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .detail-page {
+    padding: 20px 10px;
+  }
+
+  .detail-card {
+    border-radius: 20px;
+  }
+
+  .detail-header {
+    padding: 15px 20px;
+    flex-direction: row;
+  }
+
+  .author-badge {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  .detail-main {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .detail-title-input {
+    font-size: 1.4rem;
+  }
+
+  .detail-content-area {
+    font-size: 1rem;
+    min-height: 300px;
+  }
+
+  .detail-actions {
+    padding: 20px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .save-btn,
+  .delete-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* MOBILE PEQUENO */
+@media (max-width: 480px) {
+  .detail-title-input {
+    font-size: 1.2rem;
+  }
+
+  .detail-content-area {
+    font-size: 0.95rem;
+  }
+
+  .back-btn {
+    font-size: 0.85rem;
+  }
 }

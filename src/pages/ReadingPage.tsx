@@ -52,8 +52,19 @@ const ReadingPage: React.FC = () => {
         <article className="reading-article">
           <header className="article-header">
             <h1>{chapter?.title}</h1>
-            <div className="ornament">✦ 🍪 ✦</div>
           </header>
+
+          {/* --- NOVA SEÇÃO: IMAGEM DO CAPÍTULO --- */}
+          {(chapter?.chapterImage || chapter?.imageUrl || chapter?.image) && (
+            <div className="chapter-visual-wrapper">
+              <img 
+                src={chapter.chapterImage || chapter.imageUrl || chapter.image} 
+                alt="Ilustração do Capítulo" 
+                className="chapter-main-img"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+              />
+            </div>
+          )}
           
           <div className="article-body">
             {chapter?.content?.split('\n').map((paragraph: string, i: number) => (

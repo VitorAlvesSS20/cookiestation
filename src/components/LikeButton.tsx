@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../services/firebase";
-import { doc, runTransaction, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, increment } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Toast } from "../utils/swal";
 
@@ -14,44 +14,50 @@ const LikeButton: React.FC<LikeProps> = ({ storyId }) => {
   const [likeCount, setLikeCount] = useState(0);
 
   useEffect(() => {
-    if (!user) return;
-    
-    const checkLike = async () => {
-      const likeDoc = await getDoc(doc(db, "stories", storyId, "likes", user.uid));
-      setLiked(likeDoc.exists());
-      
+    const fetchLikes = async () => {
       const storyDoc = await getDoc(doc(db, "stories", storyId));
-      setLikeCount(storyDoc.data()?.likes || 0);
+      if (storyDoc.exists()) {
+        const data = storyDoc.data();
+        setLikeCount(data.likesCount || 0);
+        // Verifica se o UID do usuário está no array de likes
+        if (user) {
+          setLiked(data.likes?.includes(user.uid) || false);
+        }
+      }
     };
-
-    checkLike();
+    fetchLikes();
   }, [storyId, user]);
 
   const toggleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Impede de abrir a história ao clicar no like na Home
+    e.stopPropagation();
     if (!user) return Toast.fire({ icon: 'info', title: 'Faça login para curtir! ☕' });
 
-    const likeRef = doc(db, "stories", storyId, "likes", user.uid);
     const storyRef = doc(db, "stories", storyId);
 
     try {
-      await runTransaction(db, async (transaction) => {
-        const storySnap = await transaction.get(storyRef);
-        const currentLikes = storySnap.data()?.likes || 0;
+      if (!liked) {
+        // Otimismo na UI
+        setLiked(true);
+        setLikeCount(prev => prev + 1);
 
-        if (!liked) {
-          transaction.set(likeRef, { createdAt: new Date() });
-          transaction.update(storyRef, { likes: currentLikes + 1 });
-          setLikeCount(currentLikes + 1);
-        } else {
-          transaction.delete(likeRef);
-          transaction.update(storyRef, { likes: Math.max(0, currentLikes - 1) });
-          setLikeCount(Math.max(0, currentLikes - 1));
-        }
-        setLiked(!liked);
-      });
+        await updateDoc(storyRef, {
+          likes: arrayUnion(user.uid),
+          likesCount: increment(1)
+        });
+      } else {
+        // Otimismo na UI
+        setLiked(false);
+        setLikeCount(prev => Math.max(0, prev - 1));
+
+        await updateDoc(storyRef, {
+          likes: arrayRemove(user.uid),
+          likesCount: increment(-1)
+        });
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao curtir:", err);
+      // Reverte se der erro (QA fallback)
+      setLiked(!liked);
     }
   };
 

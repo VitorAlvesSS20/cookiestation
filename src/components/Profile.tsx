@@ -77,7 +77,7 @@ const Profile: React.FC = () => {
       }, { merge: true });
 
       setIsEditing(false);
-      Toast.fire({ icon: 'success', title: 'Perfil atualizado com sucesso! 🍪' });
+      Toast.fire({ icon: 'success', title: 'Perfil atualizado com sucesso!' });
     } catch (error) {
       Toast.fire({ icon: 'error', title: 'Erro ao salvar alterações.' });
     }
@@ -194,10 +194,10 @@ const Profile: React.FC = () => {
                  <span className="xp-badge">⭐ {writerXP} XP</span>
               </div>
               
-              {authorStatus && <p className="status-bubble">💬 {authorStatus}</p>}
+              {authorStatus && <p className="status-bubble"> {authorStatus}</p>}
               
               <div className="meta-info">
-                {location && <span className="location-tag">📍 {location}</span>}
+                {location && <span className="location-tag"> {location}</span>}
               </div>
 
               <p className="bio-text">{bio || "Uma página em branco aguardando sua primeira história..."}</p>
