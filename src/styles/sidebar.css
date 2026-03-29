@@ -1,106 +1,107 @@
-/* ===================== */
-/* HAMBURGUER */
-/* ===================== */
+/* ==========================================================================
+   SIDEBAR - COOKIESTATION (ESTILO CAFETERIA PREMIUM)
+   ========================================================================== */
 
+:root {
+  --sidebar-width: 280px;
+  --cookie-brown: #3d2b1f;
+  --cookie-tan: #6b4f3b;
+  --cookie-gold: #d4a373;
+  --latte-cream: #fdfbf7;
+  --border-light: #f3eeeb;
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 🍔 BOTÃO HAMBURGUER */
 .hamburger {
-  display: none;
+  display: none; /* Escondido no Desktop */
   position: fixed;
   top: 15px;
   left: 15px;
-  z-index: 1001;
-  width: 40px;
-  height: 40px;
+  z-index: 1100; /* Acima de tudo */
+  width: 45px;
+  height: 45px;
   background: white;
-  border: 1px solid #F3EEEB;
-  border-radius: 10px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 12px;
   cursor: pointer;
-  padding: 5px;
+  padding: 8px;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.hamburger:hover {
+  background: var(--latte-cream);
+  transform: scale(1.05);
 }
 
 .hamburger span {
   display: block;
   height: 3px;
-  background: #8B7E74;
-  margin: 6px 0;
-  border-radius: 2px;
-  transition: 0.3s;
+  width: 100%;
+  background: var(--cookie-tan);
+  margin: 5px 0;
+  border-radius: 10px;
+  transition: var(--transition-smooth);
 }
 
-/* ANIMAÇÃO → X */
-.hamburger.active span:nth-child(1) {
-  transform: translateY(9px) rotate(45deg);
-}
+/* ANIMAÇÃO HAMBURGUER → X */
+.hamburger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
-.hamburger.active span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger.active span:nth-child(3) {
-  transform: translateY(-9px) rotate(-45deg);
-}
-
-/* ===================== */
-/* OVERLAY */
-/* ===================== */
-
+/* 🌑 OVERLAY (Fundo Escuro) */
 .overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.3);
-  z-index: 999;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
 }
 
-/* ===================== */
-/* SIDEBAR */
-/* ===================== */
-
+/* 📦 CONTAINER DA SIDEBAR */
 .sidebar-container {
   width: var(--sidebar-width);
   background-color: white;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  border-right: 1.5px solid #F3EEEB;
-  padding: 30px 20px;
-  box-sizing: border-box;
-  transition: transform 0.3s ease;
+  border-right: 1.5px solid var(--border-light);
+  padding: 40px 20px;
+  position: sticky; /* Mantém fixa no scroll do desktop */
+  top: 0;
+  left: 0;
+  z-index: 100;
+  transition: transform var(--transition-smooth);
 }
 
-/* LOGO */
-
+/* ☕ LOGO */
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
+  transition: transform 0.2s ease;
 }
 
-.logo-text-wrapper {
-  display: flex;
-  align-items: baseline;
-}
+.sidebar-logo:hover { transform: scale(1.02); }
 
-.logo-emoji {
-  font-size: 2rem;
-  line-height: 1;
-}
+.logo-emoji { font-size: 2.2rem; line-height: 1; }
 
 .logo-text {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: var(--cookie-brown);
+  letter-spacing: -0.5px;
 }
 
-/* NAV */
-
+/* 📚 NAVEGAÇÃO (NAV) */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
 }
 
@@ -108,105 +109,147 @@
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #8B7E74;
-  padding: 12px 15px;
-  border-radius: 12px;
+  color: #8b7e74;
+  padding: 14px 18px;
+  border-radius: 14px;
   font-weight: 600;
-  transition: 0.2s;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
 }
 
 .nav-item:hover {
-  background-color: #FDFBF7;
+  background-color: var(--latte-cream);
   color: var(--cookie-tan);
+  transform: translateX(5px);
 }
 
 .nav-item.active {
-  background-color: #FDFBF7;
-  color: var(--cookie-tan);
-  border: 1px solid #F3EEEB;
+  background-color: #fdf6f0; /* Tom café com leite suave */
+  color: var(--cookie-gold);
+  box-shadow: inset 4px 0 0 var(--cookie-gold);
 }
 
-/* FOOTER */
-
+/* 👤 FOOTER DA SIDEBAR */
 .sidebar-footer {
-  border-top: 1.5px solid #F3EEEB;
-  padding-top: 20px;
+  border-top: 1.5px solid var(--border-light);
+  padding-top: 25px;
   margin-top: auto;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   margin-bottom: 20px;
 }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid var(--cookie-tan);
+.avatar-wrapper {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;
 }
+
+.user-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--cookie-gold);
+  background: var(--latte-cream);
+}
+
+.status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.status-dot.online { background: #4caf50; box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
+.status-dot.offline { background: #bdbdbd; }
 
 .user-text {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-width: 0; /* Para o truncamento de texto funcionar */
 }
 
 .user-name {
   font-weight: 700;
   color: var(--cookie-brown);
-}
-
-.user-email {
-  font-size: 0.8rem;
-  color: #8B7E74;
+  font-size: 0.95rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* LOGOUT */
+.user-email {
+  font-size: 0.8rem;
+  color: #a09084;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
+/* 🚪 BOTÃO LOGOUT */
 .btn-logout {
   width: 100%;
-  background: none;
-  border: 1.5px solid #F3EEEB;
-  color: #8B7E74;
-  padding: 10px;
-  border-radius: 10px;
+  background: transparent;
+  border: 1.5px solid var(--border-light);
+  color: #8b7e74;
+  padding: 12px;
+  border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-logout:hover {
-  background-color: #FFF0F0;
-  color: #E63946;
-  border-color: #FFE0E0;
+  background-color: #fff0f0;
+  color: #e63946;
+  border-color: #ffe0e0;
 }
 
-/* ===================== */
-/* MOBILE */
-/* ===================== */
+/* ==========================================================================
+   📱 RESPONSIVIDADE (MOBILE)
+   ========================================================================== */
 
 @media (max-width: 768px) {
   .hamburger {
-    display: block;
+    display: block; /* Mostra o botão no mobile */
   }
 
   .sidebar-container {
     position: fixed;
     top: 0;
     left: 0;
-    height: 100%;
-    z-index: 1000;
-
-    transform: translateX(-100%);
+    z-index: 1001; /* Acima do overlay */
+    transform: translateX(-100%); /* Esconde fora da tela */
+    box-shadow: none;
+    width: 280px;
+    max-width: 80vw;
   }
 
   .sidebar-container.open {
-    transform: translateX(0);
+    transform: translateX(0); /* Desliza para dentro */
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.2);
   }
+
+  .sidebar-logo {
+    margin-top: 20px; /* Ajuste para não colidir com o botão hamburguer */
+  }
+
+  .nav-item {
+    font-size: 1.05rem; /* Itens um pouco maiores para touch */
+    padding: 16px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

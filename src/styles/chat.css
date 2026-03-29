@@ -1,103 +1,123 @@
+/* --- ÁREA PRINCIPAL DO CHAT (CONTAINER MESTRE) --- */
 .chat-display {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #1a140f;
-}
-
-.chat-window {
-  display: flex;
-  flex-direction: column;
+  background-color: var(--mocha-dark); 
   height: 100%;
+  min-width: 0; /* IMPEDE que o chat empurre a sidebar para fora */
+  position: relative;
+  overflow: hidden;
 }
 
+/* NOVO: Cabeçalho Fixo (Para o nome do usuário não voar) */
+.chat-header {
+  padding: 15px 30px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(212, 163, 115, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0; /* Não deixa o header sumir */
+}
+
+.chat-header h3 {
+  color: var(--cookie-gold);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* --- ÁREA DE MENSAGENS (COM SCROLL INTERNO) --- */
 .messages-area {
-  flex: 1;
-  padding: 30px;
+  flex: 1; /* Ocupa todo o espaço central */
+  padding: 25px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  /* Textura sutil de fundo para parecer papel de carta */
-  background-image: radial-gradient(rgba(196, 164, 132, 0.03) 1px, transparent 1px);
-  background-size: 20px 20px;
+  gap: 12px;
+  background-image: radial-gradient(rgba(212, 163, 115, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  scroll-behavior: smooth;
 }
 
-/* Balões de Mensagem */
+/* --- BALÕES DE MENSAGEM --- */
 .msg-bubble {
-  max-width: 75%;
+  max-width: 70%;
   padding: 12px 18px;
   font-size: 0.95rem;
   line-height: 1.5;
-  border-radius: 12px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Mensagem enviada pelo usuário (Destaque Dourado) */
 .msg-bubble.sent {
   align-self: flex-end;
-  background-color: #c4a484; 
-  color: #1a140f; /* Texto escuro para contraste alto sobre o dourado */
-  border-bottom-right-radius: 2px;
-  box-shadow: 4px 4px 15px rgba(0,0,0,0.2);
+  background-color: var(--cookie-gold); 
+  color: var(--mocha-dark); 
+  border-bottom-right-radius: 4px;
 }
 
-/* Mensagem recebida (Discreta) */
 .msg-bubble.received {
   align-self: flex-start;
   background-color: #2d241d;
-  color: #f5f0eb; /* Texto creme sobre fundo escuro */
-  border-bottom-left-radius: 2px;
-  border: 1px solid rgba(196, 164, 132, 0.1);
+  color: var(--latte-cream);
+  border-bottom-left-radius: 4px;
+  border: 1px solid rgba(212, 163, 115, 0.1);
 }
 
-/* Barra de Input Inferior */
+/* --- BARRA DE INPUT (FIXA NO RODAPÉ) --- */
 .chat-input {
-  padding: 25px 30px;
+  padding: 20px 30px;
   background-color: #231c15;
   display: flex;
-  gap: 15px;
-  border-top: 1px solid rgba(196, 164, 132, 0.1);
+  gap: 12px;
+  align-items: center;
+  border-top: 1px solid rgba(212, 163, 115, 0.1);
+  flex-shrink: 0; /* Garante que a barra nunca seja esmagada */
 }
 
 .chat-input input {
   flex: 1;
-  background-color: #1a140f;
-  border: 1px solid rgba(196, 164, 132, 0.2);
-  padding: 12px 20px;
-  border-radius: 6px;
-  color: #f5f0eb;
+  min-width: 0; /* Crucial para o input não quebrar o flexbox no mobile */
+  background-color: var(--mocha-dark);
+  border: 1px solid rgba(212, 163, 115, 0.2);
+  padding: 14px 20px;
+  border-radius: 25px;
+  color: var(--latte-cream);
   outline: none;
-  transition: border-color 0.3s;
+  transition: var(--transition);
 }
 
 .chat-input input:focus {
-  border-color: #c4a484;
+  border-color: var(--cookie-gold);
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.1);
 }
 
 .chat-input button {
-  background-color: #c4a484;
-  color: #1a140f;
+  background-color: var(--cookie-gold);
+  color: var(--mocha-dark);
   border: none;
+  height: 48px;
   padding: 0 25px;
-  border-radius: 6px;
+  border-radius: 25px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.2s;
+  flex-shrink: 0;
+  transition: var(--transition);
 }
 
 .chat-input button:hover {
-  background-color: #f5f0eb;
+  background-color: var(--latte-cream);
   transform: translateY(-2px);
 }
 
-/* Scrollbar Estilizada */
-.messages-area::-webkit-scrollbar {
-  width: 5px;
-}
-
-.messages-area::-webkit-scrollbar-thumb {
-  background-color: rgba(196, 164, 132, 0.2);
-  border-radius: 10px;
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 600px) {
+  .chat-header { padding: 12px 20px; }
+  .messages-area { padding: 15px; }
+  .chat-input { padding: 15px; gap: 8px; }
+  .chat-input button { padding: 0 15px; font-size: 0.7rem; }
 }

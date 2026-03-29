@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { auth, db } from "../services/firebase";
+import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import { Toast } from "../utils/swal"; 
 import "../styles/auth.css";
 
@@ -16,8 +17,30 @@ const Login: React.FC = () => {
     setLoading(true);
     
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      
+      const res = await signInWithEmailAndPassword(auth, email, password);
+      const user = res.user;
+
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+
+      /* 🔥 GARANTE QUE USER EXISTE */
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          displayName: user.displayName || "Usuário",
+          email: user.email,
+          photoURL: user.photoURL || "",
+          online: true,
+          lastSeen: Date.now(),
+        });
+      } else {
+        /* 🟢 MARCAR ONLINE */
+        await updateDoc(userRef, {
+          online: true,
+          lastSeen: Date.now(),
+        });
+      }
+
       Toast.fire({
         icon: 'success',
         title: 'Bem-vindo de volta! ☕'
@@ -27,7 +50,11 @@ const Login: React.FC = () => {
     } catch (err: any) {
       let message = "Ocorreu um erro ao preparar seu acesso. Tente novamente.";
       
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      if (
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/invalid-credential'
+      ) {
         message = "E-mail ou senha incorretos. Verifique os ingredientes!";
       } else if (err.code === 'auth/too-many-requests') {
         message = "Muitas tentativas! Aguarde um pouco para o café esfriar.";

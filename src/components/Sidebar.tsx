@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useMemo } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { db } from "../services/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -9,44 +9,55 @@ import "../styles/sidebar.css";
 type UserData = {
   photoURL?: string;
   displayName?: string;
+  online?: boolean;
 };
 
 const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation(); // Útil para monitorar mudanças de rota
 
   const [liveUserData, setLiveUserData] = useState<UserData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   /* ========================= */
-  /* LISTENER TEMPO REAL USER */
+  /* 🔥 LISTENER TEMPO REAL USER */
   /* ========================= */
   useEffect(() => {
+    // Se não houver usuário logado, limpa o estado e não tenta buscar no DB
+    // Isso evita o erro de "Missing or Insufficient Permissions" no console
     if (!user?.uid) {
       setLiveUserData(null);
       return;
     }
 
+    const userRef = doc(db, "users", user.uid);
+
     const unsubscribe = onSnapshot(
-      doc(db, "users", user.uid),
+      userRef,
       (docSnap) => {
         if (docSnap.exists()) {
-          const data = docSnap.data() as UserData;
-          setLiveUserData(data);
-        } else {
-          setLiveUserData(null);
+          setLiveUserData(docSnap.data() as UserData);
         }
       },
       (error) => {
-        console.error("Erro ao escutar usuário:", error);
+        // Erro silencioso se for permissão (comum no logout), mas loga outros
+        if (error.code !== "permission-denied") {
+          console.error("Erro ao escutar usuário:", error);
+        }
       }
     );
 
     return () => unsubscribe();
   }, [user?.uid]);
 
+  // Fecha o menu automaticamente quando a rota mudar (Mobile UX)
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
   /* ========================= */
-  /* LOGOUT */
+  /* 🚪 LOGOUT */
   /* ========================= */
   const handleLogout = async () => {
     const result = await ConfirmDialog(
@@ -57,126 +68,82 @@ const Sidebar: React.FC = () => {
     if (!result.isConfirmed) return;
 
     try {
+      setIsOpen(false);
       await logout();
-
       Toast.fire({
         icon: "success",
         title: "Até logo, escritor! 🚪",
       });
-
       navigate("/login");
     } catch (e) {
       console.error("Erro ao deslogar", e);
-
-      Toast.fire({
-        icon: "error",
-        title: "Houve um erro ao tentar sair.",
-      });
+      Toast.fire({ icon: "error", title: "Houve um erro ao tentar sair." });
     }
   };
 
   /* ========================= */
-  /* NAVIGATION */
+  /* 🧠 MEMOIZED VALUES (Performance) */
   /* ========================= */
-  const handleNavigate = (path: string) => {
-    navigate(path);
-    setIsOpen(false);
-  };
+  const avatar = useMemo(() => 
+    liveUserData?.photoURL || user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName || "User"}&background=6b4f3b&color=fff`,
+    [liveUserData?.photoURL, user?.photoURL, user?.displayName]
+  );
 
-  /* ========================= */
-  /* FALLBACK AVATAR */
-  /* ========================= */
-  const avatar =
-    liveUserData?.photoURL ||
-    user?.photoURL ||
-    "https://ui-avatars.com/api/?name=User&background=6b4f3b&color=fff";
+  const name = liveUserData?.displayName || user?.displayName || "Escritor";
+  const isOnline = liveUserData?.online ?? false;
 
-  const name =
-    liveUserData?.displayName ||
-    user?.displayName ||
-    "Escritor";
-
-  /* ========================= */
-  /* UI */
-  /* ========================= */
   return (
     <>
-      {/* BOTÃO HAMBURGUER */}
+      {/* 🍔 BOTÃO HAMBURGUER - Acessibilidade: aria-label */}
       <button
         className={`hamburger ${isOpen ? "active" : ""}`}
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Abrir menu"
       >
         <span />
         <span />
         <span />
       </button>
 
-      {/* OVERLAY */}
-      {isOpen && (
-        <div className="overlay" onClick={() => setIsOpen(false)} />
-      )}
+      {/* 🌑 OVERLAY - Com animação de fade via CSS se desejar */}
+      {isOpen && <div className="overlay" onClick={() => setIsOpen(false)} />}
 
       <aside className={`sidebar-container ${isOpen ? "open" : ""}`}>
-        {/* LOGO */}
-        <div className="sidebar-logo" onClick={() => handleNavigate("/")}>
+        {/* 🍪 LOGO */}
+        <div className="sidebar-logo" onClick={() => navigate("/")} role="button">
           <span className="logo-emoji">🍪</span>
           <div className="logo-text-wrapper">
             <span className="logo-text">CookieStation</span>
           </div>
         </div>
 
-        {/* NAV */}
+        {/* 📚 NAV - Organizado por lista para melhor SEO/Acessibilidade */}
         <nav className="sidebar-nav">
-          <NavLink
-            to="/"
-            onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
+          <NavLink to="/" end className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Início
           </NavLink>
 
-          <NavLink
-            to="/profile"
-            onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
+          <NavLink to="/profile" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Meu Perfil
           </NavLink>
 
-          <NavLink
-            to="/create"
-            onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
+          <NavLink to="/create" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Criar Nova História
           </NavLink>
 
-          <NavLink
-            to="/messages"
-            onClick={() => setIsOpen(false)}
-            className={({ isActive }) =>
-              isActive ? "nav-item active" : "nav-item"
-            }
-          >
+          <NavLink to="/messages" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Comunidade
           </NavLink>
         </nav>
 
-        {/* FOOTER */}
+        {/* 👤 FOOTER */}
         <div className="sidebar-footer">
           {user && (
             <div className="user-info">
-              <img
-                src={avatar}
-                alt="Avatar"
-                className="user-avatar"
-              />
+              <div className="avatar-wrapper">
+                <img src={avatar} alt="Seu Avatar" className="user-avatar" />
+                <span className={`status-dot ${isOnline ? "online" : "offline"}`} title={isOnline ? "Online" : "Offline"} />
+              </div>
 
               <div className="user-text">
                 <span className="user-name">{name}</span>
