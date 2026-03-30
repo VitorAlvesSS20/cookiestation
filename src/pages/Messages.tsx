@@ -39,53 +39,72 @@ const Messages: React.FC = () => {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const chatData: Chat[] = snapshot.docs.map((docSnap) => {
-        const data = docSnap.data();
-        const participants: string[] = data.participants || [];
-        const recipientId = participants.find((id) => id !== user.uid);
+      try {
+        const chatData: Chat[] = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          const participants: string[] = data.participants || [];
+          const recipientId = participants.find((id) => id !== user.uid);
 
-        const recipientData = data.participantsData && recipientId
-            ? data.participantsData[recipientId] || {}
-            : {};
+          const recipientData = data.participantsData && recipientId
+              ? data.participantsData[recipientId] || {}
+              : {};
 
-        return {
-          id: docSnap.id,
-          recipientId,
-          recipientName: recipientData.name || "Escritor",
-          recipientPhoto: recipientData.photoURL || "",
-          lastMessage: data.lastMessage || "",
-          lastUpdate: data.lastUpdate?.toMillis 
-            ? data.lastUpdate.toMillis() 
-            : typeof data.lastUpdate === 'number' ? data.lastUpdate : 0,
-        };
-      });
+          return {
+            id: docSnap.id,
+            recipientId,
+            recipientName: recipientData.name || "Escritor",
+            recipientPhoto: recipientData.photoURL || "",
+            lastMessage: data.lastMessage || "",
+            lastUpdate: data.lastUpdate?.toMillis 
+              ? data.lastUpdate.toMillis() 
+              : typeof data.lastUpdate === 'number' ? data.lastUpdate : 0,
+          };
+        });
 
-      setChats(chatData.sort((a, b) => b.lastUpdate - a.lastUpdate));
-      setLoading(false);
+        setChats(chatData.sort((a, b) => b.lastUpdate - a.lastUpdate));
+        setLoading(false);
+      } catch (err) {
+        console.error("Erro ao processar chats:", err);
+        setLoading(false);
+      }
     }, (error) => {
-      console.error(error);
+      console.error("Erro no Listener do Firebase:", error);
       setLoading(false);
+      if (error.code === 'permission-denied') {
+        Toast.fire({ icon: "error", title: "Acesso negado à Estação de Mensagens." });
+      }
     });
 
     return () => unsubscribe();
   }, [user?.uid]);
 
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); 
 
     const result = await ConfirmDialog(
       "Apagar conversa?",
-      "Deseja realmente remover este café da sua estante?"
+      "Deseja realmente remover este café da sua estante? Esta ação não pode ser desfeita."
     );
 
     if (!result.isConfirmed) return;
 
     try {
       await deleteDoc(doc(db, "chats", chatId));
-      if (activeChat?.id === chatId) setActiveChat(null);
+      
+      if (activeChat?.id === chatId) {
+        setActiveChat(null);
+      }
+      
       Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
-    } catch (error) {
-      Toast.fire({ icon: "error", title: "Erro ao deletar." });
+    } catch (error: any) {
+      console.error("Erro ao deletar conversa:", error);
+      
+      let errorMsg = "Não foi possível remover a conversa.";
+      if (error.code === 'permission-denied') {
+        errorMsg = "Você não tem permissão para apagar esta conversa.";
+      }
+
+      Toast.fire({ icon: "error", title: errorMsg });
     }
   };
 
@@ -99,7 +118,9 @@ const Messages: React.FC = () => {
 
         <div className="inbox-list">
           {loading ? (
-            <div className="loader-msg">☕ Carregando...</div>
+            <div className="loader-msg">
+              <span className="spinner-coffee">☕</span> Carregando...
+            </div>
           ) : chats.length > 0 ? (
             chats.map((chat) => (
               <div
@@ -117,16 +138,23 @@ const Messages: React.FC = () => {
 
                 <div className="inbox-info">
                   <p className="inbox-name">{chat.recipientName}</p>
-                  <p className="inbox-preview">{chat.lastMessage || "Inicie uma conversa..."}</p>
+                  <p className="inbox-preview">
+                    {chat.lastMessage || "Inicie uma conversa..."}
+                  </p>
                 </div>
 
-                <button className="btn-delete-small" onClick={(e) => handleDeleteChat(chat.id, e)}>
-                  🗑️
+                <button 
+                  className="btn-delete-small" 
+                  onClick={(e) => handleDeleteChat(chat.id, e)}
+                  title="Apagar conversa"
+                >
+                  <i className="fi fi-rr-trash"></i>
+                  <span className="emoji-fallback">🗑️</span>
                 </button>
               </div>
             ))
           ) : (
-            <div className="loader-msg">Nenhuma conversa.</div>
+            <div className="loader-msg">Nenhuma conversa por aqui ainda.</div>
           )}
         </div>
       </aside>
@@ -143,13 +171,16 @@ const Messages: React.FC = () => {
                 <h3>{activeChat.recipientName}</h3>
               </div>
             </header>
-            <ChatWindow chatId={activeChat.id} recipientName={activeChat.recipientName} />
+            <ChatWindow 
+              chatId={activeChat.id} 
+              recipientName={activeChat.recipientName} 
+            />
           </div>
         ) : (
           <div className="no-chat-selected">
             <span className="coffee-icon">☕</span>
             <h3>Sua xícara está vazia</h3>
-            <p>Selecione um escritor para conversar.</p>
+            <p>Selecione um escritor para iniciar uma conversa.</p>
           </div>
         )}
       </main>
