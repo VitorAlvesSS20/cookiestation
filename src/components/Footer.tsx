@@ -29,9 +29,9 @@ const Footer: React.FC = () => {
 
             <div className="nav-col">
               <h4>Suporte</h4>
-              <span>Diretrizes</span>
-              <span>Privacidade</span>
-              <span>Sobre nós</span>
+              <span onClick={() => navigate("/guidelines")}>Diretrizes</span>
+              <span onClick={() => navigate("/privacy")}>Privacidade</span>
+              <span onClick={() => navigate("/about")}>Sobre nós</span>
             </div>
           </nav>
         </div>

@@ -18,6 +18,10 @@ const ReadingPage = lazy(() => import("./pages/ReadingPage"));
 const Messages = lazy(() => import("./pages/Messages"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+const Guidelines = lazy(() => import("./pages/Guidelines"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const About = lazy(() => import("./pages/About"));
+
 export default function App() {
   const { loading, user } = useAuth();
   const location = useLocation();
@@ -28,7 +32,10 @@ export default function App() {
     location.pathname.includes("/read/") ||
     location.pathname.includes("/new-chapter") ||
     location.pathname.includes("/edit-chapter/") ||
-    location.pathname.includes("/edit-story/");
+    location.pathname.includes("/edit-story/") ||
+    location.pathname === "/guidelines" ||
+    location.pathname === "/privacy" ||
+    location.pathname === "/about";
 
   const showSidebar = !isAuthPage && !isFocusPage;
 
@@ -143,6 +150,10 @@ export default function App() {
                   </PrivateRoute>
                 }
               />
+
+              <Route path="/guidelines" element={<Guidelines />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/about" element={<About />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

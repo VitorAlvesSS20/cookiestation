@@ -13,7 +13,7 @@ import "./styles/chat.css";
 import "./styles/likeButton.css";
 import "./styles/storyView.css";
 import "./styles/notFound.css";
-
+import "./styles/staticPages.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
