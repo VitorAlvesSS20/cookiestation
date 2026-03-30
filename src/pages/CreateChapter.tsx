@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db, storage } from "../services/firebase";
+import { db } from "../services/firebase";
 import { 
   collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, deleteDoc 
 } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../context/AuthContext";
 import { Toast, ConfirmDialog } from "../utils/swal";
 import "../styles/createStory.css";
@@ -18,12 +17,9 @@ const CreateChapter: React.FC = () => {
   const [chapterTitle, setChapterTitle] = useState("");
   const [content, setContent] = useState("");
   const [chapterCover, setChapterCover] = useState(""); 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // --- AUTO-RESIZE TEXTAREA ---
-  // Isso garante que o textarea cresça com o texto, permitindo que o scroll seja da PÁGINA
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -31,7 +27,6 @@ const CreateChapter: React.FC = () => {
     }
   }, [content]);
 
-  // --- CARREGAR DADOS ---
   useEffect(() => {
     if (!storyId) return;
 
@@ -47,7 +42,7 @@ const CreateChapter: React.FC = () => {
             setIsEditing(true);
           }
         } catch (error) {
-          console.error("Erro ao carregar:", error);
+          console.error(error);
           Toast.fire({ icon: "error", title: "Erro ao carregar capítulo." });
         }
       } else {
@@ -64,7 +59,6 @@ const CreateChapter: React.FC = () => {
     fetchChapter();
   }, [storyId, chapterId]);
 
-  // --- AUTO-SAVE (DRAFT) ---
   useEffect(() => {
     if (isEditing || !storyId) return;
 
@@ -80,16 +74,6 @@ const CreateChapter: React.FC = () => {
     return () => clearTimeout(timer);
   }, [chapterTitle, content, chapterCover, storyId, isEditing]);
 
-  // --- HANDLERS ---
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (chapterCover.startsWith("blob:")) URL.revokeObjectURL(chapterCover);
-      setSelectedFile(file);
-      setChapterCover(URL.createObjectURL(file));
-    }
-  };
-
   const handlePublish = async () => {
     if (!user || !storyId) return;
     if (!chapterTitle.trim() || !content.trim()) {
@@ -100,18 +84,11 @@ const CreateChapter: React.FC = () => {
     try {
       const storyRef = doc(db, "stories", storyId);
       const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
-      let finalImageUrl = chapterCover;
-
-      if (selectedFile) {
-        const fileRef = ref(storage, `chapters/${storyId}/${Date.now()}_${selectedFile.name}`);
-        const snapshot = await uploadBytes(fileRef, selectedFile);
-        finalImageUrl = await getDownloadURL(snapshot.ref);
-      }
 
       const chapterData = {
         title: chapterTitle.trim(),
         content: content.trim(),
-        chapterCover: finalImageUrl,
+        chapterCover: chapterCover.trim(),
         wordCount,
         updatedAt: serverTimestamp()
       };
@@ -185,7 +162,7 @@ const CreateChapter: React.FC = () => {
 
         <main className="create-main-form">
           <h1 className="form-step-title">
-            {isEditing ? "Editar Capítulo 🖋️" : "Escrever Capítulo"}
+            {isEditing ? "Editar Capítulo" : "Escrever Capítulo"}
           </h1>
 
           <div className="field">
@@ -198,19 +175,30 @@ const CreateChapter: React.FC = () => {
           </div>
 
           <div className="field">
-            <label className="custom-file-upload">
-              <span>{selectedFile ? "Trocar Capa" : "Adicionar Imagem de Capa"}</span>
-              <input type="file" accept="image/*" onChange={handleFileChange} />
-            </label>
+            <label className="label-url">Link da Imagem de Capa</label>
+            <input 
+              className="url-input"
+              type="text" 
+              placeholder="Cole a URL da imagem aqui (Pinterest, Imgur...)"
+              value={chapterCover}
+              onChange={(e) => setChapterCover(e.target.value)}
+            />
 
             {chapterCover && (
               <div className="preview-container">
-                <img src={chapterCover} alt="Preview" className="chapter-cover-preview" />
+                <img 
+                  src={chapterCover} 
+                  alt="Preview" 
+                  className="chapter-cover-preview" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x200?text=Imagem+Invalida";
+                  }}
+                />
                 <button 
                   className="btn-remove-img" 
-                  onClick={() => { setChapterCover(""); setSelectedFile(null); }}
+                  onClick={() => setChapterCover("")}
                 >
-                  Remover
+                  Remover Link
                 </button>
               </div>
             )}
@@ -223,7 +211,7 @@ const CreateChapter: React.FC = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Era uma vez..."
-              style={{ overflow: 'hidden' }} // Oculta o scroll interno para usar o da página
+              style={{ overflow: 'hidden' }}
             />
             <div className="word-count-badge">
               {content.trim().split(/\s+/).filter(Boolean).length} palavras

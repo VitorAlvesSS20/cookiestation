@@ -1,164 +1,216 @@
 .detail-page, .create-page-wrapper {
   min-height: 100vh;
   width: 100%;
-  background-color: #fdf8f5;
-  padding: 60px 20px;
-  display: block; 
-  overflow-y: auto !important; 
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
+  background-color: var(--latte-cream);
+  padding: clamp(20px, 5vw, 60px) 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: background-color 0.3s ease;
 }
 
 .detail-card, .create-container-refined {
   width: 100%;
   max-width: 850px;
-  background: white;
-  border-radius: 28px;
-  box-shadow: 0 15px 45px rgba(60, 42, 33, 0.08);
+  background: var(--paper-white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
   border: 1px solid #eee6e2;
   display: flex;
   flex-direction: column;
-  margin: 0 auto 40px auto; 
-  animation: fadeIn 0.4s ease-out;
-  overflow: visible !important;
+  margin-bottom: 40px; 
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; /* Garante que o header/footer não quebrem o raio da borda */
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(15px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .detail-header, .create-actions-top {
   padding: 20px 40px;
-  background: rgba(253, 252, 251, 0.95);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid #f3eeeb;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
   position: sticky;
   top: 0;
   z-index: 100;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
+}
+
+.back-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.95rem;
+}
+
+.back-btn:hover {
+  color: var(--mocha-dark);
+  transform: translateX(-3px);
 }
 
 .detail-main, .create-main-form {
-  padding: 40px 50px;
+  padding: 40px clamp(20px, 5vw, 50px);
   display: flex;
   flex-direction: column;
   gap: 25px;
-  flex: 1;
 }
 
-.detail-title-input, .main-title-input {
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-field label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--cookie-gold);
+  letter-spacing: 1.2px;
+  margin-left: 4px;
+}
+
+.input-field input, 
+.input-field textarea, 
+.input-field select {
   width: 100%;
-  border: none;
-  background: transparent;
-  font-size: 2.2rem;
-  font-family: 'Playfair Display', serif;
-  font-weight: 700;
-  color: #3c2a21;
-  padding: 10px 0;
+  padding: 16px;
+  border: 1.5px solid #eee6e2;
+  border-radius: var(--radius-md);
+  background: #faf8f6;
+  font-family: var(--font-main);
+  font-size: 1rem;
+  color: var(--mocha-dark);
+  transition: all 0.3s ease;
+}
+
+.input-field input:focus, 
+.input-field textarea:focus,
+.input-field select:focus {
+  border-color: var(--cookie-gold);
+  background: var(--paper-white);
   outline: none;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.3s;
+  box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.1);
 }
 
-.detail-title-input:focus, .main-title-input:focus {
-  border-bottom-color: #d4a373;
-}
-
-.detail-content-area, .main-content-input {
-  width: 100%;
-  min-height: 500px;
-  height: auto;
-  border: none;
-  background: transparent;
-  font-size: 1.2rem;
+.detail-content-area {
+  min-height: 350px;
+  resize: vertical;
   line-height: 1.8;
-  color: #4a372f;
-  resize: none;
-  padding: 10px 0;
-  font-family: 'Inter', sans-serif;
-  overflow: visible !important;
+  font-family: 'Georgia', serif; /* Melhor para leitura/escrita longa */
 }
 
-.detail-content-area:focus, .main-content-input:focus {
-  outline: none;
-}
-
-.detail-actions, .group-btns {
+.detail-actions {
   padding: 30px 40px;
   background: #fdfcfb;
   border-top: 1px solid #f3eeeb;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 15px;
-  border-bottom-left-radius: 28px;
-  border-bottom-right-radius: 28px;
 }
 
-.btn-primary, .save-btn {
-  background: #3c2a21;
-  color: white;
-  padding: 14px 32px;
+.save-btn {
+  background: var(--mocha-dark);
+  color: var(--paper-white);
+  padding: 14px 36px;
   border-radius: 50px;
   border: none;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 12px rgba(26, 18, 11, 0.15);
+}
+
+.save-btn:hover:not(:disabled) {
+  background: var(--cookie-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(212, 163, 115, 0.3);
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+
+.delete-btn {
+  background: transparent;
+  color: var(--error);
+  border: 1.5px solid var(--error);
+  padding: 14px 24px;
+  border-radius: 50px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(60, 42, 33, 0.15);
-  transition: all 0.3s;
+  transition: var(--transition);
 }
 
-.btn-primary:hover, .save-btn:hover {
-  background: #d4a373;
-  color: #3c2a21;
-  transform: translateY(-2px);
+.delete-btn:hover {
+  background: var(--error);
+  color: white;
 }
 
+/* RESPONSIVIDADE APERFEIÇOADA */
 @media (max-width: 768px) {
   .detail-page, .create-page-wrapper {
     padding: 0;
+    background-color: var(--paper-white); /* Remove fundo duplo no mobile */
   }
 
   .detail-card, .create-container-refined {
     border-radius: 0;
-    border: none;
     margin-bottom: 0;
+    border: none;
+    box-shadow: none;
     min-height: 100vh;
   }
 
   .detail-header, .create-actions-top {
-    border-radius: 0;
     padding: 15px 20px;
+    border-radius: 0;
+    top: -1px; /* Evita frestas no sticky */
   }
 
   .detail-main, .create-main-form {
-    padding: 30px 20px;
+    padding: 20px;
+    gap: 20px;
   }
 
-  .detail-title-input, .main-title-input {
-    font-size: 1.6rem;
-  }
-
-  .detail-content-area, .main-content-input {
-    font-size: 1.1rem;
-    min-height: 400px;
+  .detail-content-area {
+    min-height: 400px; /* Maior área útil no celular */
   }
 
   .detail-actions {
-    flex-direction: column;
+    flex-direction: column-reverse; /* Delete fica embaixo do Save */
     padding: 20px;
+    gap: 12px;
+    background: var(--paper-white);
     position: sticky;
     bottom: 0;
-    background: white;
-    box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
+    border-top: 1.5px solid #f3eeeb;
+    z-index: 90;
   }
 
-  .btn-primary, .save-btn {
+  .save-btn, .delete-btn {
     width: 100%;
-    height: 50px;
+    padding: 16px;
+    font-size: 1rem;
+  }
+
+  .input-field input, 
+  .input-field textarea {
+    font-size: 16px; /* Evita zoom automático no iOS */
   }
 }

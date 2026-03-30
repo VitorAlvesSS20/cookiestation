@@ -11,7 +11,8 @@ interface Story {
   authorName: string;
   userId: string;
   createdAt: any;
-  words?: number;
+  wordCount?: number;
+  genre?: string;
 }
 
 const Home: React.FC = () => {
@@ -21,17 +22,32 @@ const Home: React.FC = () => {
 
   const fetchPublicStories = async () => {
     try {
+      const storiesRef = collection(db, "stories");
+      
       const q = query(
-        collection(db, "stories"), 
+        storiesRef,
         where("visibility", "==", "public"),
-        orderBy("createdAt", "desc"), 
+        orderBy("createdAt", "desc"),
         limit(20)
       );
+
       const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Story[];
+      const data = querySnapshot.docs.map(doc => {
+        const docData = doc.data();
+        return {
+          id: doc.id,
+          ...docData,
+          authorName: docData.authorName || "Escritor Anônimo",
+          title: docData.title || "História Sem Título",
+          coverUrl: docData.coverUrl || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
+          wordCount: docData.wordCount || 0,
+          genre: docData.genre || "Conto"
+        };
+      }) as Story[];
+
       setStories(data);
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao buscar histórias:", error);
     } finally {
       setLoading(false);
     }
@@ -40,6 +56,15 @@ const Home: React.FC = () => {
   useEffect(() => {
     fetchPublicStories();
   }, []);
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "Recentemente";
+    try {
+      return timestamp.toDate().toLocaleDateString('pt-BR');
+    } catch (e) {
+      return "Recentemente";
+    }
+  };
 
   return (
     <div className="home-container fade-in">
@@ -58,32 +83,52 @@ const Home: React.FC = () => {
       <main className="feed-main">
         <div className="section-header">
           <h2>Recém Saídas</h2>
-          <div className="divider-line"></div>
         </div>
 
         {loading ? (
-          <div className="loading-state">☕ Moendo os grãos...</div>
+          <div className="loading-state">
+            <div className="loader-mocha"></div>
+            <p>Moendo os grãos...</p>
+          </div>
         ) : (
           <div className="stories-grid">
-            {stories.map((story) => (
-              <div key={story.id} className="story-card" onClick={() => navigate(`/story/${story.id}`)}>
-                <div 
-                  className="card-image"
-                  style={{ backgroundImage: `url(${story.coverUrl || '/livro.jpg'})` }}
-                />
-                <div className="card-content">
-                  <div className="card-author">
-                    <span>Por {story.authorName}</span>
+            {stories.length > 0 ? (
+              stories.map((story) => (
+                <article 
+                  key={story.id} 
+                  className="story-card" 
+                  onClick={() => navigate(`/story/${story.id}`)}
+                >
+                  <div className="card-image-wrapper">
+                    <div 
+                      className="card-image"
+                      style={{ 
+                        backgroundImage: `url(${story.coverUrl})` 
+                      }}
+                      aria-label={`Capa de ${story.title}`}
+                    />
                   </div>
-                  <h3>{story.title || "História Sem Título"}</h3>
-                  <div className="card-meta">
-                    <span>{story.words || 0} palavras</span>
-                    <span className="dot">•</span>
-                    <span>{story.createdAt?.toDate().toLocaleDateString('pt-BR')}</span>
+                  
+                  <div className="card-content">
+                    <div className="card-author">
+                      <span>{story.genre} • Por {story.authorName}</span>
+                    </div>
+                    <h3>{story.title}</h3>
+                    <div className="card-meta">
+                      <span>{(story.wordCount || 0).toLocaleString()} palavras</span>
+                      <span className="dot">•</span>
+                      <span>{formatDate(story.createdAt)}</span>
+                    </div>
                   </div>
-                </div>
+                </article>
+              ))
+            ) : (
+              <div className="empty-feed" style={{ textAlign: 'center', gridColumn: '1/-1', padding: '50px' }}>
+                <p style={{ color: '#8B7E74', fontWeight: 'bold' }}>
+                  Nenhuma história pública encontrada na estação ainda. ☕
+                </p>
               </div>
-            ))}
+            )}
           </div>
         )}
       </main>

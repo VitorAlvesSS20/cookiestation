@@ -30,9 +30,6 @@ const Messages: React.FC = () => {
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* ========================= */
-  /* LISTAR CHATS EM TEMPO REAL */
-  /* ========================= */
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -66,16 +63,13 @@ const Messages: React.FC = () => {
       setChats(chatData.sort((a, b) => b.lastUpdate - a.lastUpdate));
       setLoading(false);
     }, (error) => {
-      console.error("Erro Firestore:", error);
+      console.error(error);
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [user?.uid]);
 
-  /* ========================= */
-  /* DELETAR CONVERSA */
-  /* ========================= */
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -97,7 +91,6 @@ const Messages: React.FC = () => {
 
   return (
     <div className={`messages-layout ${activeChat ? "chat-open" : ""}`}>
-      {/* SIDEBAR */}
       <aside className="inbox-sidebar">
         <div className="inbox-header">
           <h2>Comunidade</h2>
@@ -138,16 +131,17 @@ const Messages: React.FC = () => {
         </div>
       </aside>
 
-      {/* ÁREA DE CHAT */}
       <main className="chat-container">
         {activeChat ? (
           <div className="chat-display">
             <header className="chat-header">
-              {/* Botão de voltar visível apenas no Mobile via CSS */}
               <button className="mobile-back-button" onClick={() => setActiveChat(null)}>
-                ←
+                <i className="fi fi-rr-arrow-small-left"></i>
               </button>
-              <h3>{activeChat.recipientName}</h3>
+              <div className="chat-user-info">
+                {activeChat.recipientPhoto && <img src={activeChat.recipientPhoto} alt="" />}
+                <h3>{activeChat.recipientName}</h3>
+              </div>
             </header>
             <ChatWindow chatId={activeChat.id} recipientName={activeChat.recipientName} />
           </div>

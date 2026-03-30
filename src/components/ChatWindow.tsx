@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 
-const ChatWindow = ({ chatId, recipientName }: any) => {
+const ChatWindow = ({ chatId }: any) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
@@ -20,16 +20,12 @@ const ChatWindow = ({ chatId, recipientName }: any) => {
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   };
 
   useEffect(() => {
-    const timeout = setTimeout(scrollToBottom, 100);
-    return () => clearTimeout(timeout);
+    scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
@@ -71,7 +67,7 @@ const ChatWindow = ({ chatId, recipientName }: any) => {
         lastUpdate: serverTimestamp(),
       });
     } catch (error) {
-      console.error("Erro:", error);
+      console.error(error);
       setText(currentText);
     }
   };
@@ -79,34 +75,30 @@ const ChatWindow = ({ chatId, recipientName }: any) => {
   if (!user) return null;
 
   return (
-    <div className="chat-display">
-      {/* MANTENHA O HEADER AQUI se você removeu do Messages.tsx. 
-         Se o nome não está aparecendo, é porque falta essa div abaixo:
-      */}
-      <header className="chat-header">
-         {/* O botão de voltar (mobile-back-button) deve estar aqui ou no Messages.tsx */}
-         <h3>{recipientName}</h3>
-      </header>
-
+    <div className="chat-window-inner">
       <div className="messages-area" ref={scrollRef}>
         {messages.map((m) => (
           <div
             key={m.id}
             className={`msg-bubble ${m.userId === user.uid ? "sent" : "received"}`}
           >
-            {m.text}
+            <div className="msg-text">{m.text}</div>
           </div>
         ))}
       </div>
 
-      <form className="chat-input" onSubmit={sendMessage}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Escreva sua mensagem..."
-          autoFocus
-        />
-        <button type="submit">Enviar</button>
+      <form className="chat-input-form" onSubmit={sendMessage}>
+        <div className="input-wrapper">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Escreva sua mensagem..."
+            autoFocus
+          />
+          <button type="submit" disabled={!text.trim()}>
+            Enviar
+          </button>
+        </div>
       </form>
     </div>
   );

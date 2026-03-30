@@ -57,14 +57,10 @@ const StoryView: React.FC = () => {
     fetchStoryData();
   }, [id]);
 
-  // Lógica de Chat: Cria ou acessa a conversa única entre Leitor e Autor
   const handleContactAuthor = async () => {
     if (!user || !story) return;
-
-    // Impede que o autor fale consigo mesmo (redundância de segurança)
     if (user.uid === story.userId) return;
 
-    // Gera ID único baseado nos UIDs ordenados (Padrão de QA para evitar canais duplicados)
     const combinedId = [user.uid, story.userId].sort().join("_");
 
     try {
@@ -81,10 +77,22 @@ const StoryView: React.FC = () => {
     }
   };
 
-  if (loading) return <div className="loader-container"><div className="loader-mocha"></div><p>Abrindo o livro...</p></div>;
-  if (!story) return <div className="error-container"><h1>404</h1><p>Obra não encontrada.</p></div>;
+  if (loading) return (
+    <div className="global-loader">
+      <span>🍪</span>
+      <p>Abrindo o livro...</p>
+    </div>
+  );
+
+  if (!story) return (
+    <div className="error-container">
+      <h1>404</h1>
+      <p>Obra não encontrada.</p>
+    </div>
+  );
 
   const isOwner = user?.uid === story.userId;
+  const totalWords = chapters.reduce((acc, cap) => acc + (cap.wordCount || 0), 0);
 
   return (
     <div className="story-view-container fade-in">
@@ -98,6 +106,7 @@ const StoryView: React.FC = () => {
           <div className="badge-row">
             <span className="genre-badge">{story.genre}</span>
             {id && <LikeButton storyId={id} />}
+            <span className="word-count-badge">{totalWords.toLocaleString()} palavras</span>
           </div>
           
           <h1>{story.title}</h1>
@@ -115,7 +124,6 @@ const StoryView: React.FC = () => {
               {chapters.length > 0 ? "Começar Leitura" : "Sem capítulos"}
             </button>
 
-            {/* Inicia Chat se não for o dono */}
             {!isOwner && user && (
               <button className="btn-contact-author" onClick={handleContactAuthor}>
                 <span>✉</span> Conversar com Autor
@@ -123,9 +131,14 @@ const StoryView: React.FC = () => {
             )}
 
             {isOwner && (
-              <button className="btn-add-chapter" onClick={() => navigate(`/story/${id}/new-chapter`)}>
-                + Adicionar Capítulo
-              </button>
+              <>
+                <button className="btn-edit-story" onClick={() => navigate(`/edit-story/${id}`)}>
+                  <span>✎</span> Editar Livro
+                </button>
+                <button className="btn-add-chapter" onClick={() => navigate(`/story/${id}/new-chapter`)}>
+                  + Adicionar Capítulo
+                </button>
+              </>
             )}
           </div>
         </div>

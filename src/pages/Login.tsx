@@ -23,7 +23,6 @@ const Login: React.FC = () => {
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
-      /* 🔥 GARANTE QUE USER EXISTE */
       if (!userSnap.exists()) {
         await setDoc(userRef, {
           uid: user.uid,
@@ -34,7 +33,6 @@ const Login: React.FC = () => {
           lastSeen: Date.now(),
         });
       } else {
-        /* 🟢 MARCAR ONLINE */
         await updateDoc(userRef, {
           online: true,
           lastSeen: Date.now(),

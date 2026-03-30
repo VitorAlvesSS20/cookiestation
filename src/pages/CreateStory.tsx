@@ -18,9 +18,6 @@ const CreateStory: React.FC = () => {
   const [visibility, setVisibility] = useState("public");
   const [loading, setLoading] = useState(false);
 
-  /* ========================= */
-  /* LOAD LOCAL STORAGE */
-  /* ========================= */
   useEffect(() => {
     const saved = localStorage.getItem("cookie_book_base");
     if (saved) {
@@ -33,79 +30,72 @@ const CreateStory: React.FC = () => {
     }
   }, []);
 
-  /* ========================= */
-  /* AUTO SAVE */
-  /* ========================= */
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (title || synopsis) {
+      if (title.trim() || synopsis.trim()) {
         localStorage.setItem(
           "cookie_book_base",
           JSON.stringify({ title, genre, synopsis, coverUrl, visibility })
         );
       }
-    }, 1000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [title, genre, synopsis, coverUrl, visibility]);
 
-  /* ========================= */
-  /* CREATE STORY */
-  /* ========================= */
   const handleCreateBook = async () => {
     if (!user) {
-      Toast.fire({ icon: "error", title: "Sessão expirada." });
+      Toast.fire({ icon: "error", title: "Sessão expirada. Entre novamente." });
       return;
     }
 
     if (!title.trim() || !synopsis.trim()) {
-      Toast.fire({ icon: "warning", title: "Título e Sinopse são obrigatórios!" });
+      Toast.fire({ icon: "warning", title: "Dê um nome e uma sinopse à sua obra! 🖋️" });
       return;
     }
 
-    // 🚫 MODERAÇÃO
     if (!isContentAllowed(title + " " + synopsis)) {
-      Toast.fire({ icon: "error", title: "Conteúdo proibido 🚫" });
+      Toast.fire({ icon: "error", title: "Conteúdo não permitido pelas diretrizes." });
       return;
     }
 
     setLoading(true);
 
     try {
-      await addDoc(collection(db, "stories"), {
+      const storyData = {
         title: title.trim(),
         synopsis: synopsis.trim(),
         genre,
         visibility,
         userId: user.uid,
-        authorName: user.displayName || "Escritor",
+        authorName: user.displayName || "Escritor Anônimo",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-
-        coverUrl:
-          coverUrl ||
-          "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
-
+        coverUrl: coverUrl.trim() || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
         chapterCount: 0,
         status: "writing",
-
-        // ❤️ sistema de likes
         likes: [],
         likesCount: 0,
-      });
+      };
 
-      // 🔥 ANTI-SPAM (ESSENCIAL)
+      await addDoc(collection(db, "stories"), storyData);
+
       await updateDoc(doc(db, "users", user.uid), {
         lastPostAt: serverTimestamp(),
       });
 
       localStorage.removeItem("cookie_book_base");
 
-      Toast.fire({ icon: "success", title: "Obra registrada!" });
+      Toast.fire({ 
+        icon: "success", 
+        title: "Obra registrada com sucesso! 🍪",
+        text: "Sua história já está na estante."
+      });
 
       navigate("/profile");
     } catch (e) {
-      Toast.fire({ icon: "error", title: "Erro ao criar a obra." });
+      console.error(e);
+      Toast.fire({ icon: "error", title: "Ops! Ocorreu um erro ao salvar." });
     } finally {
       setLoading(false);
     }
@@ -125,7 +115,7 @@ const CreateStory: React.FC = () => {
               onClick={handleCreateBook}
               disabled={loading}
             >
-              {loading ? "Preparando..." : "Criar Livro"}
+              {loading ? "Preparando Café..." : "Publicar Obra"}
             </button>
           </div>
         </header>
@@ -133,28 +123,32 @@ const CreateStory: React.FC = () => {
         <main className="create-main-form">
           <h1 className="form-step-title">Novo Livro na Estante</h1>
 
-          <input
-            className="main-title-input"
-            placeholder="Título da Obra"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+          <div className="field">
+            <input
+              className="main-title-input"
+              placeholder="Título..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
 
-          <div className="metadata-grid">
+          <div className="metadata-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
             <div className="field">
-              <label>Gênero</label>
-              <select value={genre} onChange={(e) => setGenre(e.target.value)}>
+              <label className="label-url">Gênero</label>
+              <select className="url-input" value={genre} onChange={(e) => setGenre(e.target.value)}>
                 <option>Conto</option>
                 <option>Fantasia</option>
                 <option>Terror</option>
                 <option>Sci-Fi</option>
                 <option>Romance</option>
+                <option>Aventura</option>
               </select>
             </div>
 
             <div className="field">
-              <label>Privacidade</label>
+              <label className="label-url">Privacidade</label>
               <select
+                className="url-input"
                 value={visibility}
                 onChange={(e) => setVisibility(e.target.value)}
               >
@@ -165,23 +159,34 @@ const CreateStory: React.FC = () => {
           </div>
 
           <div className="field">
-            <label>Link da Capa</label>
+            <label className="label-url">Link da Capa do Livro</label>
             <input
+              className="url-input"
               type="text"
               value={coverUrl}
               onChange={(e) => setCoverUrl(e.target.value)}
-              placeholder="URL da imagem..."
+              placeholder="Cole a URL da imagem aqui..."
             />
+            {coverUrl && (
+              <div className="preview-container" style={{ maxHeight: '250px' }}>
+                <img 
+                  src={coverUrl} 
+                  alt="Preview da Capa" 
+                  className="chapter-cover-preview"
+                  onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/400x600?text=Capa+Invalida")}
+                />
+              </div>
+            )}
           </div>
 
           <div className="field">
-            <label>Sinopse / Resumo</label>
+            <label className="label-url">Sinopse</label>
             <textarea
               className="main-content-input"
-              style={{ minHeight: "250px" }}
+              style={{ minHeight: "200px", fontSize: "1rem" }}
               value={synopsis}
               onChange={(e) => setSynopsis(e.target.value)}
-              placeholder="Descreva seu mundo aqui..."
+              placeholder="Sobre o que é o seu mundo?"
             />
           </div>
         </main>

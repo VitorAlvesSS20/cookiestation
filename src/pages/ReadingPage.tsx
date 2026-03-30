@@ -50,8 +50,13 @@ const ReadingPage: React.FC = () => {
   const nextId = allChapters[currentIndex + 1];
 
   if (loading) {
-    return <div className="loader">Virando a página...</div>;
-  }
+  return (
+    <div className="reading-loader-container">
+      <div className="loader-coffee">☕</div>
+      <p>Virando a página...</p>
+    </div>
+  );
+}
 
   return (
     <div className="reading-page-layout">
