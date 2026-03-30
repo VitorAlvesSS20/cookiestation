@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db, storage } from "../services/firebase";
 import { 
@@ -13,96 +13,116 @@ const CreateChapter: React.FC = () => {
   const { storyId, chapterId } = useParams<{ storyId: string, chapterId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [chapterTitle, setChapterTitle] = useState("");
   const [content, setContent] = useState("");
-  const [chapterCover, setChapterCover] = useState("");
+  const [chapterCover, setChapterCover] = useState(""); 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
+  // --- AUTO-RESIZE TEXTAREA ---
+  // Isso garante que o textarea cresça com o texto, permitindo que o scroll seja da PÁGINA
   useEffect(() => {
-    if (chapterId && storyId) {
-      const fetchChapter = async () => {
-        const docSnap = await getDoc(doc(db, "stories", storyId, "chapters", chapterId));
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [content]);
+
+  // --- CARREGAR DADOS ---
+  useEffect(() => {
+    if (!storyId) return;
+
+    const fetchChapter = async () => {
+      if (chapterId) {
+        try {
+          const docSnap = await getDoc(doc(db, "stories", storyId, "chapters", chapterId));
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setChapterTitle(data.title || "");
+            setContent(data.content || "");
+            setChapterCover(data.chapterCover || "");
+            setIsEditing(true);
+          }
+        } catch (error) {
+          console.error("Erro ao carregar:", error);
+          Toast.fire({ icon: "error", title: "Erro ao carregar capítulo." });
+        }
+      } else {
+        const saved = localStorage.getItem(`draft_chapter_${storyId}`);
+        if (saved) {
+          const data = JSON.parse(saved);
           setChapterTitle(data.title || "");
           setContent(data.content || "");
-          setChapterCover(data.chapterCover || "");
-          setIsEditing(true);
+          setChapterCover(data.cover || "");
         }
-      };
-      fetchChapter();
-    } else {
-      const saved = localStorage.getItem(`draft_chapter_${storyId}`);
-      if (saved) {
-        const data = JSON.parse(saved);
-        setChapterTitle(data.title || "");
-        setContent(data.content || "");
-        setChapterCover(data.cover || "");
       }
-    }
+    };
+
+    fetchChapter();
   }, [storyId, chapterId]);
 
+  // --- AUTO-SAVE (DRAFT) ---
   useEffect(() => {
+    if (isEditing || !storyId) return;
+
     const timer = setTimeout(() => {
-      if (!isEditing && (chapterTitle || content)) {
+      if (chapterTitle.trim() || content.trim()) {
         localStorage.setItem(
           `draft_chapter_${storyId}`,
-          JSON.stringify({
-            title: chapterTitle,
-            content,
-            cover: chapterCover
-          })
+          JSON.stringify({ title: chapterTitle, content, cover: chapterCover })
         );
       }
-    }, 1500);
+    }, 2000);
+    
     return () => clearTimeout(timer);
   }, [chapterTitle, content, chapterCover, storyId, isEditing]);
 
+  // --- HANDLERS ---
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (chapterCover.startsWith("blob:")) URL.revokeObjectURL(chapterCover);
+      setSelectedFile(file);
+      setChapterCover(URL.createObjectURL(file));
+    }
+  };
+
   const handlePublish = async () => {
     if (!user || !storyId) return;
-
     if (!chapterTitle.trim() || !content.trim()) {
       return Toast.fire({ icon: "warning", title: "Título e texto são obrigatórios!" });
     }
 
     setLoading(true);
-
     try {
       const storyRef = doc(db, "stories", storyId);
-      const wordCount = content.trim().split(/\s+/).length;
+      const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+      let finalImageUrl = chapterCover;
 
-      let imageUrl = chapterCover;
-
-      // 🔥 Upload real
       if (selectedFile) {
-        const fileRef = ref(
-          storage,
-          `chapters/${storyId}/${Date.now()}_${selectedFile.name}`
-        );
-
-        await uploadBytes(fileRef, selectedFile);
-        imageUrl = await getDownloadURL(fileRef);
+        const fileRef = ref(storage, `chapters/${storyId}/${Date.now()}_${selectedFile.name}`);
+        const snapshot = await uploadBytes(fileRef, selectedFile);
+        finalImageUrl = await getDownloadURL(snapshot.ref);
       }
 
-      if (isEditing && chapterId) {
-        await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), {
-          title: chapterTitle.trim(),
-          content: content.trim(),
-          chapterCover: imageUrl || "",
-          wordCount
-        });
+      const chapterData = {
+        title: chapterTitle.trim(),
+        content: content.trim(),
+        chapterCover: finalImageUrl,
+        wordCount,
+        updatedAt: serverTimestamp()
+      };
 
+      if (isEditing && chapterId) {
+        await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), chapterData);
         Toast.fire({ icon: "success", title: "Capítulo atualizado!" });
       } else {
         await addDoc(collection(storyRef, "chapters"), {
-          title: chapterTitle.trim(),
-          content: content.trim(),
-          chapterCover: imageUrl || "",
-          createdAt: serverTimestamp(),
-          wordCount
+          ...chapterData,
+          createdAt: serverTimestamp()
         });
 
         await updateDoc(storyRef, {
@@ -124,27 +144,21 @@ const CreateChapter: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    const result = await ConfirmDialog(
-      "Excluir Capítulo?",
-      "Esta ação não pode ser desfeita."
-    );
+    const result = await ConfirmDialog("Excluir Capítulo?", "Esta ação é permanente.");
+    if (!result.isConfirmed || !storyId || !chapterId) return;
 
-    if (result.isConfirmed && storyId && chapterId) {
-      setLoading(true);
-      try {
-        await deleteDoc(doc(db, "stories", storyId, "chapters", chapterId));
-
-        await updateDoc(doc(db, "stories", storyId), {
-          chapterCount: increment(-1)
-        });
-
-        Toast.fire({ icon: "success", title: "Capítulo removido." });
-        navigate(`/story/${storyId}`);
-      } catch {
-        Toast.fire({ icon: "error", title: "Erro ao excluir capítulo." });
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    try {
+      await deleteDoc(doc(db, "stories", storyId, "chapters", chapterId));
+      await updateDoc(doc(db, "stories", storyId), {
+        chapterCount: increment(-1)
+      });
+      Toast.fire({ icon: "success", title: "Capítulo removido." });
+      navigate(`/story/${storyId}`);
+    } catch {
+      Toast.fire({ icon: "error", title: "Erro ao excluir." });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,84 +167,67 @@ const CreateChapter: React.FC = () => {
       <div className="create-container-refined">
         <header className="create-actions-top">
           <button className="btn-exit" onClick={() => navigate(-1)}>
-            ← Voltar
+            ← Cancelar
           </button>
 
           <div className="group-btns">
             {isEditing && (
-              <button
-                className="btn-delete"
-                onClick={handleDelete}
-                disabled={loading}
-              >
+              <button className="btn-delete" onClick={handleDelete} disabled={loading}>
                 Excluir
               </button>
             )}
 
-            <button
-              className="btn-primary"
-              onClick={handlePublish}
-              disabled={loading}
-            >
-              {loading
-                ? "Gravando..."
-                : isEditing
-                ? "Salvar Alterações"
-                : "Publicar Capítulo"}
+            <button className="btn-primary" onClick={handlePublish} disabled={loading}>
+              {loading ? "Processando..." : isEditing ? "Salvar Alterações" : "Publicar Capítulo"}
             </button>
           </div>
         </header>
 
         <main className="create-main-form">
           <h1 className="form-step-title">
-            {isEditing ? "Editando Capítulo 🖋️" : "Novo Capítulo"}
+            {isEditing ? "Editar Capítulo 🖋️" : "Escrever Capítulo"}
           </h1>
 
-          <input
-            className="main-title-input"
-            placeholder="Título do Capítulo"
-            value={chapterTitle}
-            onChange={(e) => setChapterTitle(e.target.value)}
-          />
-
-          {/* 🔥 UPLOAD + PREVIEW */}
           <div className="field">
-            <label>Capa do Capítulo</label>
-
             <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  setSelectedFile(file);
-                  setChapterCover(URL.createObjectURL(file));
-                }
-              }}
+              className="main-title-input"
+              placeholder="Dê um nome ao seu capítulo..."
+              value={chapterTitle}
+              onChange={(e) => setChapterTitle(e.target.value)}
             />
+          </div>
+
+          <div className="field">
+            <label className="custom-file-upload">
+              <span>{selectedFile ? "Trocar Capa" : "Adicionar Imagem de Capa"}</span>
+              <input type="file" accept="image/*" onChange={handleFileChange} />
+            </label>
 
             {chapterCover && (
-              <img
-                src={chapterCover}
-                alt="Preview"
-                style={{
-                  marginTop: "10px",
-                  width: "100%",
-                  borderRadius: "12px"
-                }}
-              />
+              <div className="preview-container">
+                <img src={chapterCover} alt="Preview" className="chapter-cover-preview" />
+                <button 
+                  className="btn-remove-img" 
+                  onClick={() => { setChapterCover(""); setSelectedFile(null); }}
+                >
+                  Remover
+                </button>
+              </div>
             )}
           </div>
 
           <div className="field">
-            <label>Conteúdo</label>
             <textarea
+              ref={textareaRef}
               className="main-content-input"
-              style={{ minHeight: "450px" }}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Escreva sua história..."
+              placeholder="Era uma vez..."
+              style={{ overflow: 'hidden' }} // Oculta o scroll interno para usar o da página
             />
+            <div className="word-count-badge">
+              {content.trim().split(/\s+/).filter(Boolean).length} palavras
+            </div>
           </div>
         </main>
       </div>

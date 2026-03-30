@@ -1,29 +1,36 @@
-/* ========================= */
-/* BASE */
-/* ========================= */
 
 .create-page-wrapper {
   background-color: #FDFBF7;
+  /* Importante: min-height em vez de height fixo */
   min-height: 100vh;
+  width: 100%;
   padding: 20px;
+  /* Garante que o scroll da janela do navegador funcione */
+  display: block; 
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Scroll suave em iPhones */
 }
 
 /* ========================= */
-/* CONTAINER */
+/* CONTAINER PRINCIPAL */
 /* ========================= */
 
 .create-container-refined {
   max-width: 850px;
-  margin: 0 auto;
+  margin: 0 auto 60px auto; /* Margem inferior para o rodapé respirar */
   background: white;
   padding: clamp(20px, 5vw, 50px);
   border-radius: 30px;
   border: 1.5px solid #F3EEEB;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+  box-shadow: 0 20px 50px rgba(60, 42, 33, 0.05);
+  /* Removido qualquer overflow:hidden que pudesse travar o conteúdo */
+  position: relative;
+  animation: fadeIn 0.5s ease;
 }
 
 /* ========================= */
-/* HEADER ACTIONS */
+/* HEADER ACTIONS (STICKY) */
 /* ========================= */
 
 .create-actions-top {
@@ -31,8 +38,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 15px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #F3EEEB;
+  /* Torna os botões sempre visíveis no topo ao scrollar */
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
 }
 
 .btn-exit {
@@ -42,51 +55,49 @@
   font-weight: 800;
   cursor: pointer;
   transition: 0.2s;
+  font-size: 0.9rem;
 }
 
 .btn-exit:hover {
   color: #1A120B;
 }
 
+.group-btns {
+  display: flex;
+  gap: 12px;
+}
+
 .btn-primary {
   background: #1A120B;
   color: white;
   border: none;
-  padding: 12px 30px;
+  padding: 12px 25px;
   border-radius: 50px;
   font-weight: 800;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  opacity: 0.9;
-}
-
-.btn-primary:active {
-  transform: scale(0.98);
+  background: #D4A373;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(212, 163, 115, 0.3);
 }
 
 /* ========================= */
-/* INPUTS */
+/* INPUTS E FORMULÁRIO */
 /* ========================= */
 
 .main-title-input {
   width: 100%;
   border: none;
-  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
   font-weight: 900;
   color: #1A120B;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   outline: none;
-}
-
-.metadata-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-  margin-bottom: 25px;
+  background: transparent;
+  font-family: 'Playfair Display', serif;
 }
 
 .field label {
@@ -95,131 +106,53 @@
   font-size: 0.75rem;
   color: #D4A373;
   text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1.5px solid #EBE4DE;
-  font-size: 0.95rem;
-  transition: 0.2s;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: #D4A373;
-  box-shadow: 0 0 0 2px rgba(212,163,115,0.2);
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
 }
 
 /* ========================= */
-/* EDITOR */
+/* EDITOR DE TEXTO (FIX DO TEXTAREA) */
 /* ========================= */
 
 .main-content-input {
   width: 100%;
-  border: 1.5px solid #EBE4DE;
-  border-radius: 15px;
-  padding: 20px;
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  border: 1.5px solid #F3EEEB;
+  border-radius: 18px;
+  padding: 25px;
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
   line-height: 1.8;
   font-family: 'Georgia', serif;
-  min-height: 250px;
+  /* Altura mínima para não sumir, mas livre para crescer */
+  min-height: 500px;
+  height: auto; 
   outline: none;
-  transition: 0.2s;
+  transition: border-color 0.3s;
+  background-color: #FAFAFA;
+  color: #2D241E;
+  /* Garante que o scroll venha da página, não da caixinha */
+  overflow-y: visible; 
+  resize: vertical; /* Permite que o autor ajuste manualmente se preferir */
 }
 
 .main-content-input:focus {
   border-color: #D4A373;
+  background-color: #FFFFFF;
 }
 
-/* ========================= */
-/* ADMIN / CHAPTERS */
-/* ========================= */
-
-.manage-container {
-  max-width: 800px;
-  margin: 30px auto;
-  padding: 10px;
-}
-
-.chapter-admin-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  background: white;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 15px;
-  border: 1.5px solid #F3EEEB;
-  transition: 0.2s;
-  gap: 10px;
-}
-
-.chapter-admin-card:hover {
-  border-color: #D4A373;
-}
-
-.admin-btns {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.delete-text {
-  color: #E63946;
-  background: none;
-  border: none;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-/* ========================= */
-/* TEXTOS */
-/* ========================= */
-
-.form-step-title {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  font-weight: 900;
-  margin-bottom: 10px;
-}
-
-.form-step-desc {
+/* BADGE DE PALAVRAS */
+.word-count-badge {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: #8B7E74;
-  margin-bottom: 25px;
+  background: #F3EEEB;
+  padding: 4px 12px;
+  border-radius: 20px;
 }
 
 /* ========================= */
-/* BOTÕES SECUNDÁRIOS */
-/* ========================= */
-
-.btn-delete-book {
-  background: #FFF0F0;
-  border: none;
-  border-radius: 10px;
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-/* ========================= */
-/* TAGS */
-/* ========================= */
-
-.location-tag,
-.web-link {
-  display: block;
-  font-size: 0.85rem;
-  color: #D4A373;
-  margin-bottom: 5px;
-}
-
-/* ========================= */
-/* ANIMAÇÃO */
+/* ANIMAÇÕES E EXTRAS */
 /* ========================= */
 
 .fade-in {
@@ -227,36 +160,38 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========================= */
-/* RESPONSIVO */
+/* RESPONSIVO (MOBILE) */
 /* ========================= */
 
-/* TABLET */
-@media (min-width: 768px) {
-  .metadata-grid {
-    grid-template-columns: 1fr 2fr;
-  }
-
-  .main-content-input {
-    min-height: 350px;
-  }
-}
-
-/* DESKTOP */
-@media (min-width: 1024px) {
+@media (max-width: 768px) {
   .create-page-wrapper {
-    padding: 40px 20px;
+    padding: 0; /* Cola o card na tela no celular */
+  }
+
+  .create-container-refined {
+    border-radius: 0;
+    border: none;
+    padding: 20px;
+    margin-bottom: 0;
   }
 
   .create-actions-top {
-    margin-bottom: 40px;
+    padding: 15px 0;
+    margin-bottom: 20px;
+  }
+
+  .btn-primary {
+    padding: 10px 18px;
+    font-size: 0.85rem;
   }
 
   .main-content-input {
     min-height: 400px;
+    padding: 15px;
   }
 }

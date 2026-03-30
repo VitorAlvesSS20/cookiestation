@@ -1,21 +1,17 @@
-/* --- IMPORTAÇÃO --- */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* --- PALETA DE CORES (Café & Creme) --- */
   --mocha-dark: #3C2A21;       
   --espresso-accent: #5D4037;   
   --cookie-gold: #D4A373;      
   --latte-cream: #FDF8F5;      
   --paper-white: #FFFFFF;      
   
-  /* --- ESTADOS DE UI --- */
   --text-main: #3C2A21;
   --text-muted: #8D7B70;
   --error: #E74C3C;
   --success: #27AE60;
   
-  /* --- DESIGN SYSTEM --- */
   --font-main: 'Poppins', sans-serif;
   --shadow-sm: 0 4px 12px rgba(60, 42, 33, 0.05);
   --shadow-md: 0 12px 30px rgba(60, 42, 33, 0.1);
@@ -23,11 +19,9 @@
   --radius-md: 12px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
-  /* --- VARIAVEL DE LARGURA DA SIDEBAR --- */
   --sidebar-width: 280px;
 }
 
-/* --- RESET TOTAL E PREVENÇÃO DE QUEBRA --- */
 * {
   margin: 0;
   padding: 0;
@@ -37,43 +31,48 @@
 }
 
 html, body {
-  height: 100vh; /* Força a altura da tela */
-  width: 100vw;
-  overflow: hidden; /* O scroll principal deve ser bloqueado para o app não "dançar" */
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
   background-color: var(--latte-cream);
+  color: var(--text-main);
 }
 
-/* --- ESTRUTURA MESTRE --- */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .app-with-sidebar {
   display: flex;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   position: relative;
 }
 
-/* Sidebar com trava de encolhimento */
 .sidebar-wrapper {
   width: var(--sidebar-width);
-  flex-shrink: 0; /* IMPEDE que o conteúdo principal "esmague" a sidebar */
-  height: 100%;
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   z-index: 100;
   background: var(--paper-white);
   border-right: 1px solid rgba(60, 42, 33, 0.05);
 }
 
-/* Área de conteúdo centralizada e segura */
 .content-area {
   flex: 1;
-  height: 100%;
-  overflow-y: auto; 
+  min-height: 100vh;
+  overflow-y: visible; 
   padding: 40px;
   background-color: var(--latte-cream);
   display: flex;
   flex-direction: column;
-  min-width: 0; /* FIX CRÍTICO: permite que o flex-item encolha se necessário */
+  min-width: 0;
 }
 
-/* --- CORREÇÃO DEFINITIVA PARA IMAGENS --- */
 img {
   display: block;
   max-width: 100%; 
@@ -82,10 +81,9 @@ img {
   border-radius: var(--radius-md);
 }
 
-/* --- FORMULÁRIOS QUE NÃO QUEBRAM O LAYOUT --- */
 input, textarea {
   width: 100%;
-  max-width: 100%; /* Garante que o input nunca saia do card */
+  max-width: 100%;
   outline: none;
   border: 1px solid #eee6e2;
   border-radius: var(--radius-md);
@@ -94,43 +92,47 @@ input, textarea {
   transition: var(--transition);
 }
 
-/* --- BARRA DE ROLAGEM --- */
+input:focus, textarea:focus {
+  border-color: var(--cookie-gold);
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.1);
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--cookie-gold);
   border-radius: 10px;
 }
 
-/* --- RESPONSIVIDADE PREMIUM --- */
-
-/* Tablet */
 @media (max-width: 1024px) {
   :root {
     --sidebar-width: 85px; 
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .app-with-sidebar {
-    flex-direction: column; /* Empilha no mobile */
+    flex-direction: column;
   }
   
   .sidebar-wrapper {
     width: 100%;
     height: auto;
-    min-height: 60px; /* Altura mínima para o menu superior */
     position: sticky;
     top: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(60, 42, 33, 0.05);
   }
 
   .content-area {
-    padding: 15px;
-    height: calc(100vh - 60px); /* Ocupa o resto da tela */
+    padding: 20px 15px;
+    min-height: calc(100vh - 60px);
+    overflow-y: visible;
   }
 }

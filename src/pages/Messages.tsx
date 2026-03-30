@@ -74,10 +74,10 @@ const Messages: React.FC = () => {
   }, [user?.uid]);
 
   /* ========================= */
-  /* DELETAR CONVERSA (COM TOAST) */
+  /* DELETAR CONVERSA */
   /* ========================= */
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Impede de abrir o chat ao clicar no lixo
+    e.stopPropagation();
 
     const result = await ConfirmDialog(
       "Apagar conversa?",
@@ -88,25 +88,16 @@ const Messages: React.FC = () => {
 
     try {
       await deleteDoc(doc(db, "chats", chatId));
-      
       if (activeChat?.id === chatId) setActiveChat(null);
-
-      Toast.fire({
-        icon: "success",
-        title: "Conversa removida! ☕",
-      });
+      Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
     } catch (error) {
-      console.error("Erro ao deletar:", error);
-      Toast.fire({
-        icon: "error",
-        title: "Erro ao deletar. Verifique permissões.",
-      });
+      Toast.fire({ icon: "error", title: "Erro ao deletar." });
     }
   };
 
   return (
-    <div className="messages-layout">
-      {/* SIDEBAR (Classes mantidas conforme seu CSS) */}
+    <div className={`messages-layout ${activeChat ? "chat-open" : ""}`}>
+      {/* SIDEBAR */}
       <aside className="inbox-sidebar">
         <div className="inbox-header">
           <h2>Comunidade</h2>
@@ -115,7 +106,7 @@ const Messages: React.FC = () => {
 
         <div className="inbox-list">
           {loading ? (
-            <div style={{ padding: "20px", color: "#8d7b70" }}>☕ Carregando...</div>
+            <div className="loader-msg">☕ Carregando...</div>
           ) : chats.length > 0 ? (
             chats.map((chat) => (
               <div
@@ -127,35 +118,22 @@ const Messages: React.FC = () => {
                   {chat.recipientPhoto ? (
                     <img src={chat.recipientPhoto} alt={chat.recipientName} />
                   ) : (
-                    <div style={{ fontSize: "1.5rem", textAlign: "center", lineHeight: "50px" }}>☕</div>
+                    <div className="avatar-placeholder">☕</div>
                   )}
                 </div>
 
                 <div className="inbox-info">
                   <p className="inbox-name">{chat.recipientName}</p>
-                  <p className="inbox-preview">
-                    {chat.lastMessage || "Inicie uma conversa..."}
-                  </p>
+                  <p className="inbox-preview">{chat.lastMessage || "Inicie uma conversa..."}</p>
                 </div>
 
-                {/* Botão de delete com a classe do seu projeto */}
-                <button
-                  className="btn-delete-small"
-                  onClick={(e) => handleDeleteChat(chat.id, e)}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "1.2rem",
-                    padding: "5px"
-                  }}
-                >
+                <button className="btn-delete-small" onClick={(e) => handleDeleteChat(chat.id, e)}>
                   🗑️
                 </button>
               </div>
             ))
           ) : (
-            <div style={{ padding: "20px", color: "#8d7b70" }}>Nenhuma conversa.</div>
+            <div className="loader-msg">Nenhuma conversa.</div>
           )}
         </div>
       </aside>
@@ -163,20 +141,19 @@ const Messages: React.FC = () => {
       {/* ÁREA DE CHAT */}
       <main className="chat-container">
         {activeChat ? (
-          <ChatWindow
-            chatId={activeChat.id}
-            recipientName={activeChat.recipientName}
-          />
+          <div className="chat-display">
+            <header className="chat-header">
+              {/* Botão de voltar visível apenas no Mobile via CSS */}
+              <button className="mobile-back-button" onClick={() => setActiveChat(null)}>
+                ←
+              </button>
+              <h3>{activeChat.recipientName}</h3>
+            </header>
+            <ChatWindow chatId={activeChat.id} recipientName={activeChat.recipientName} />
+          </div>
         ) : (
-          <div style={{ 
-            display: "flex", 
-            flexDirection: "column", 
-            alignItems: "center", 
-            justifyContent: "center", 
-            height: "100%",
-            color: "#8d7b70"
-          }}>
-            <span style={{ fontSize: "3rem" }}>☕</span>
+          <div className="no-chat-selected">
+            <span className="coffee-icon">☕</span>
             <h3>Sua xícara está vazia</h3>
             <p>Selecione um escritor para conversar.</p>
           </div>

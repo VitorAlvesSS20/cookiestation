@@ -18,16 +18,22 @@ const ChatWindow = ({ chatId, recipientName }: any) => {
   const [text, setText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll para a última mensagem
-  useEffect(() => {
+  const scrollToBottom = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
+  };
+
+  useEffect(() => {
+    const timeout = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeout);
   }, [messages]);
 
-  /* 🔥 TEMPO REAL COM TRAVA DE SEGURANÇA */
   useEffect(() => {
-    if (!chatId || !db) return;
+    if (!chatId || !user?.uid) return;
 
     const q = query(
       collection(db, "chats", chatId, "messages"),
@@ -43,33 +49,30 @@ const ChatWindow = ({ chatId, recipientName }: any) => {
     });
 
     return () => unsub();
-  }, [chatId]);
+  }, [chatId, user?.uid]);
 
-  /* 💬 ENVIAR MENSAGEM */
   const sendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!text.trim() || !user || !chatId) return;
 
+    const currentText = text.trim();
+    setText(""); 
+
     try {
-      const messageData = {
-        text: text.trim(),
+      await addDoc(collection(db, "chats", chatId, "messages"), {
+        text: currentText,
         userId: user.uid,
-        createdAt: serverTimestamp(), // Melhor que Date.now() para consistência de fuso horário
+        createdAt: serverTimestamp(),
         seen: false,
-      };
-
-      // Limpa o input imediatamente para melhor UX
-      const currentText = text;
-      setText("");
-
-      await addDoc(collection(db, "chats", chatId, "messages"), messageData);
+      });
 
       await updateDoc(doc(db, "chats", chatId), {
         lastMessage: currentText,
         lastUpdate: serverTimestamp(),
       });
     } catch (error) {
-      console.error("Erro ao enviar:", error);
+      console.error("Erro:", error);
+      setText(currentText);
     }
   };
 
@@ -77,13 +80,14 @@ const ChatWindow = ({ chatId, recipientName }: any) => {
 
   return (
     <div className="chat-display">
-      {/* HEADER FIXO - Impede o nome de flutuar */}
-      <div className="chat-header">
-        <h3>{recipientName || "Usuário"}</h3>
-        <span>Online</span>
-      </div>
+      {/* MANTENHA O HEADER AQUI se você removeu do Messages.tsx. 
+         Se o nome não está aparecendo, é porque falta essa div abaixo:
+      */}
+      <header className="chat-header">
+         {/* O botão de voltar (mobile-back-button) deve estar aqui ou no Messages.tsx */}
+         <h3>{recipientName}</h3>
+      </header>
 
-      {/* ÁREA DE MENSAGENS COM SCROLL */}
       <div className="messages-area" ref={scrollRef}>
         {messages.map((m) => (
           <div
@@ -95,7 +99,6 @@ const ChatWindow = ({ chatId, recipientName }: any) => {
         ))}
       </div>
 
-      {/* FORMULÁRIO DE INPUT - Permite enviar com Enter */}
       <form className="chat-input" onSubmit={sendMessage}>
         <input
           value={text}

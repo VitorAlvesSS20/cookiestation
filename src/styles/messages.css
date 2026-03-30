@@ -1,7 +1,7 @@
 /* --- CONTAINER PAI (MESSAGES.TSX) --- */
 .messages-layout {
   display: grid;
-  grid-template-columns: 350px 1fr; /* Largura fixa para sidebar */
+  grid-template-columns: 350px 1fr;
   width: 100%;
   max-width: 1400px;
   height: 85vh;
@@ -11,6 +11,7 @@
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0,0,0,0.4);
   border: 1px solid rgba(212, 163, 115, 0.1);
+  position: relative;
 }
 
 /* --- SIDEBAR --- */
@@ -20,23 +21,14 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  transition: all 0.3s ease;
+  z-index: 10;
 }
 
-.inbox-header {
-  padding: 25px 20px;
-  background: rgba(0,0,0,0.2);
-}
+.inbox-header { padding: 25px 20px; background: rgba(0,0,0,0.2); }
+.inbox-header h2 { color: var(--cookie-gold); margin-bottom: 15px; font-size: 1.4rem; }
 
-.inbox-header h2 {
-  color: var(--cookie-gold);
-  margin-bottom: 15px;
-  font-size: 1.4rem;
-}
-
-.inbox-list {
-  flex: 1;
-  overflow-y: auto;
-}
+.inbox-list { flex: 1; overflow-y: auto; }
 
 .inbox-item {
   display: flex;
@@ -58,152 +50,105 @@
   border: 2px solid var(--cookie-gold);
   overflow: hidden;
   flex-shrink: 0;
+  background: #1e1611;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .inbox-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
 .inbox-info { flex: 1; min-width: 0; }
 .inbox-name { color: #fff; font-weight: 700; margin: 0; }
-.inbox-preview { color: #8d7b70; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inbox-preview { 
+  color: #8d7b70; 
+  font-size: 0.85rem; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
 
-/* --- ÁREA DE CHAT (CHATWINDOW.TSX) --- */
+/* Botão de Deletar Pequeno */
+.btn-delete-small {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 5px;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+
+.btn-delete-small:hover { opacity: 1; transform: scale(1.1); }
+
+/* --- ÁREA DE CHAT --- */
 .chat-container {
-  flex: 1;
   display: flex;
   flex-direction: column;
   height: 100%;
   background: #140d09;
+  min-width: 0;
 }
 
-.chat-display {
+/* Placeholder quando nenhum chat está selecionado */
+.no-chat-selected {
   display: flex;
   flex-direction: column;
-  height: 100%;
-}
-
-.chat-header {
-  padding: 15px 25px;
-  background: rgba(0,0,0,0.3);
-  border-bottom: 1px solid rgba(212, 163, 115, 0.1);
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #8d7b70;
+  text-align: center;
+  padding: 20px;
 }
 
-.chat-header h3 { color: var(--cookie-gold); margin: 0; font-size: 1.1rem; }
+.no-chat-selected .coffee-icon { font-size: 3rem; margin-bottom: 10px; }
 
-.messages-area {
-  flex: 1;
-  padding: 25px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  background-image: radial-gradient(rgba(212, 163, 115, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-.msg-bubble {
-  max-width: 75%;
-  padding: 12px 18px;
-  border-radius: 18px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.msg-bubble.sent {
-  align-self: flex-end;
-  background: var(--cookie-gold);
-  color: var(--mocha-dark);
-  border-bottom-right-radius: 4px;
-}
-
-.msg-bubble.received {
-  align-self: flex-start;
-  background: #2d241d;
-  color: var(--latte-cream);
-  border-bottom-left-radius: 4px;
-  border: 1px solid rgba(212, 163, 115, 0.1);
-}
-
-.chat-input {
-  padding: 20px 25px;
-  background: #231B14;
-  display: flex;
-  gap: 12px;
-  border-top: 1px solid rgba(212, 163, 115, 0.1);
-}
-
-.chat-input input {
-  flex: 1;
-  background: var(--mocha-dark);
-  border: 1px solid rgba(212, 163, 115, 0.2);
-  padding: 12px 20px;
-  border-radius: 25px;
-  color: #fff;
-  outline: none;
-}
-
-.chat-input button {
-  background: var(--cookie-gold);
-  border: none;
-  padding: 0 25px;
-  border-radius: 25px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* --- ESTILIZAÇÃO DO SEARCH --- */
-.user-search-container {
-  position: relative;
-  margin-top: 10px;
-}
-
-.search-input {
-  width: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(212, 163, 115, 0.2);
-  padding: 10px 15px;
-  border-radius: 12px;
-  color: white;
-  outline: none;
-  transition: 0.2s;
-}
-
-.search-input:focus {
-  border-color: var(--cookie-gold);
-  background: rgba(0, 0, 0, 0.4);
-}
-
-/* O Dropdown de resultados */
-.search-results-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: #2D1E17;
-  border: 1px solid rgba(212, 163, 115, 0.2);
-  border-radius: 12px;
-  margin-top: 8px;
-  z-index: 50;
-  max-height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-/* Reutilizando o estilo do inbox-item para os resultados */
-.search-results-dropdown .inbox-item {
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  padding: 10px 15px;
-}
-
-.search-results-dropdown .inbox-item:last-child {
-  border-bottom: none;
-}
-
-/* Responsividade Mobile */
+/* --- RESPONSIVIDADE (MOBILE) --- */
 @media (max-width: 900px) {
-  .messages-layout { grid-template-columns: 80px 1fr; }
-  .inbox-info, .inbox-header h2 { display: none; }
+  .messages-layout {
+    grid-template-columns: 1fr;
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+
+  /* Sidebar ocupa tudo se não houver chat aberto */
+  .inbox-sidebar {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  /* Se o layout tiver a classe chat-open (que colocamos no Messages.tsx), a sidebar sai da tela */
+  .chat-open .inbox-sidebar {
+    transform: translateX(-100%);
+    visibility: hidden;
+  }
+
+  .chat-container {
+    width: 100%;
+  }
+
+  /* Botão de voltar visível apenas no mobile */
+  .mobile-back-button {
+    display: flex !important;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: var(--cookie-gold);
+    font-size: 1.8rem;
+    padding: 0 15px 0 0;
+    cursor: pointer;
+  }
+
+  .chat-header {
+    padding: 15px;
+  }
 }
+
+/* Esconde por padrão no Desktop */
+.mobile-back-button { display: none; }
