@@ -9,6 +9,7 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
+  getDoc,
 } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,6 +17,7 @@ const ChatWindow = ({ chatId }: any) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState("");
+  const [canRead, setCanRead] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -31,6 +33,18 @@ const ChatWindow = ({ chatId }: any) => {
   useEffect(() => {
     if (!chatId || !user?.uid) return;
 
+    const checkAccess = async () => {
+      const chatSnap = await getDoc(doc(db, "chats", chatId));
+      if (chatSnap.exists()) {
+        const data = chatSnap.data();
+        if (data.participants?.includes(user.uid)) {
+          setCanRead(true);
+        }
+      }
+    };
+
+    checkAccess();
+
     const q = query(
       collection(db, "chats", chatId, "messages"),
       orderBy("createdAt", "asc")
@@ -42,6 +56,8 @@ const ChatWindow = ({ chatId }: any) => {
         ...d.data(),
       }));
       setMessages(msgs);
+    }, (error) => {
+      console.error(error);
     });
 
     return () => unsub();
@@ -67,12 +83,11 @@ const ChatWindow = ({ chatId }: any) => {
         lastUpdate: serverTimestamp(),
       });
     } catch (error) {
-      console.error(error);
       setText(currentText);
     }
   };
 
-  if (!user) return null;
+  if (!user || !canRead) return null;
 
   return (
     <div className="chat-window-inner">

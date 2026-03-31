@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../services/firebase";
 import { Toast } from "../utils/swal"; 
 import "../styles/auth.css";
 
@@ -27,7 +28,19 @@ const Register: React.FC = () => {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: name });
+      const user = userCredential.user;
+
+      await updateProfile(user, { displayName: name });
+
+      await setDoc(doc(db, "users", user.uid), {
+        displayName: name,
+        email: email,
+        createdAt: serverTimestamp(),
+        photoURL: "",
+        bio: "",
+        location: "Brasil",
+        online: true
+      });
       
       Toast.fire({
         icon: 'success',

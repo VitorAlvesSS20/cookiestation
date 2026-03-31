@@ -12,12 +12,10 @@ import { useAuth } from "../context/AuthContext";
 
 const UserSearch = ({ onSelectChat }: any) => {
   const { user } = useAuth();
-
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [results, setResults] = useState<any[]>([]);
 
-  // Debounce para não sobrecarregar o Firestore a cada tecla
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
     return () => clearTimeout(t);
@@ -30,7 +28,6 @@ const UserSearch = ({ onSelectChat }: any) => {
         return;
       }
 
-      // Busca por prefixo (Case Sensitive no Firestore)
       const q = query(
         collection(db, "users"),
         where("displayName", ">=", debouncedSearch),
@@ -49,11 +46,9 @@ const UserSearch = ({ onSelectChat }: any) => {
     fetchUsers();
   }, [debouncedSearch, user]);
 
-  /* 🔥 INICIAR OU RECUPERAR CHAT */
   const startChat = async (targetUser: any) => {
     if (!user) return;
 
-    // Participantes ordenados para garantir ID único de conversa entre 2 pessoas
     const participants = [user.uid, targetUser.id].sort();
 
     const q = query(
@@ -64,13 +59,11 @@ const UserSearch = ({ onSelectChat }: any) => {
     const existing = await getDocs(q);
 
     let chatId;
-    let recipientName = targetUser.displayName;
+    let recipientName = targetUser.displayName || targetUser.username;
 
     if (!existing.empty) {
-      // Chat já existe
       chatId = existing.docs[0].id;
     } else {
-      // Criar novo chat com a estrutura de dados necessária
       const newChat = await addDoc(collection(db, "chats"), {
         participants,
         participantsData: {
@@ -79,23 +72,21 @@ const UserSearch = ({ onSelectChat }: any) => {
             photoURL: user.photoURL || "",
           },
           [targetUser.id]: {
-            name: targetUser.displayName || "Escritor",
+            name: recipientName || "Escritor",
             photoURL: targetUser.photoURL || "",
           },
         },
         lastMessage: "",
-        lastUpdate: serverTimestamp(), // Melhor que Date.now() para Firestore
+        lastUpdate: serverTimestamp(),
       });
       chatId = newChat.id;
     }
 
-    // Callback para a Messages.tsx
     onSelectChat({
       id: chatId,
       recipientName: recipientName,
     });
 
-    // Limpa a busca após selecionar
     setSearch("");
     setResults([]);
   };
@@ -106,7 +97,7 @@ const UserSearch = ({ onSelectChat }: any) => {
     <div className="user-search-container">
       <div className="search-input-wrapper">
         <input
-          className="search-input" // Classe que adicionamos no CSS anteriormente
+          className="search-input"
           placeholder="Buscar escritores..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}

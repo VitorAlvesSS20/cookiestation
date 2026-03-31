@@ -16,6 +16,7 @@ interface Story {
   wordCount: number;
   genre: string;
   views: number;
+  visibility: string;
 }
 
 const Home: React.FC = () => {
@@ -36,14 +37,15 @@ const Home: React.FC = () => {
     setLoading(true);
     const storiesRef = collection(db, "stories");
     
-    let q = query(
-      storiesRef,
-      where("visibility", "==", "public"),
-      orderBy("createdAt", "desc"),
-      limit(12)
-    );
-
-    if (activeGenre !== "Todos") {
+    let q;
+    if (activeGenre === "Todos") {
+      q = query(
+        storiesRef,
+        where("visibility", "==", "public"),
+        orderBy("createdAt", "desc"),
+        limit(12)
+      );
+    } else {
       q = query(
         storiesRef,
         where("visibility", "==", "public"),
@@ -178,6 +180,7 @@ const Home: React.FC = () => {
                 ))
               ) : (
                 <motion.div 
+                  key="empty"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="empty-state"

@@ -9,20 +9,30 @@ import Sidebar from "./components/Sidebar";
 import PrivateRoute from "./components/PrivateRoute";
 import Footer from "./components/Footer";
 
-const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
-const Home = lazy(() => import("./pages/Home"));
-const Profile = lazy(() => import("./components/Profile"));
-const CreateStory = lazy(() => import("./pages/CreateStory"));
-const StoryView = lazy(() => import("./pages/StoryView"));
-const EditStory = lazy(() => import("./pages/EditStory"));
-const CreateChapter = lazy(() => import("./pages/CreateChapter"));
-const ReadingPage = lazy(() => import("./pages/ReadingPage"));
-const Messages = lazy(() => import("./pages/Messages"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Guidelines = lazy(() => import("./pages/Guidelines"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const About = lazy(() => import("./pages/About"));
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+  lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      window.location.reload();
+      return { default: () => null };
+    }
+  });
+
+const Login = lazyWithRetry(() => import("./pages/Login"));
+const Register = lazyWithRetry(() => import("./pages/Register"));
+const Home = lazyWithRetry(() => import("./pages/Home"));
+const Profile = lazyWithRetry(() => import("./components/Profile"));
+const CreateStory = lazyWithRetry(() => import("./pages/CreateStory"));
+const StoryView = lazyWithRetry(() => import("./pages/StoryView"));
+const EditStory = lazyWithRetry(() => import("./pages/EditStory"));
+const CreateChapter = lazyWithRetry(() => import("./pages/CreateChapter"));
+const ReadingPage = lazyWithRetry(() => import("./pages/ReadingPage"));
+const Messages = lazyWithRetry(() => import("./pages/Messages"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const Guidelines = lazyWithRetry(() => import("./pages/Guidelines"));
+const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
+const About = lazyWithRetry(() => import("./pages/About"));
 
 function AppContent() {
   const { loading, user } = useAuth();
@@ -34,10 +44,12 @@ function AppContent() {
 
   const isFocusPage = useMemo(() => {
     return (
-      location.pathname.startsWith("/read/") ||
-      location.pathname.includes("/new-chapter") ||
-      location.pathname.includes("/edit-chapter") ||
-      location.pathname.includes("/edit-story") ||
+      (location.pathname.startsWith("/story/") && (
+        location.pathname.includes("/read/") ||
+        location.pathname.includes("/new-chapter") ||
+        location.pathname.includes("/edit-chapter")
+      )) ||
+      location.pathname.startsWith("/edit-story/") ||
       ["/guidelines", "/privacy", "/about"].includes(location.pathname)
     );
   }, [location.pathname]);
@@ -50,7 +62,8 @@ function AppContent() {
     playSFX("/sounds/click.mp3");
   }, [changeTrack, playSFX]);
 
-  const handleButtonClick = () => {
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setShowMusicMenu(prev => !prev);
   };
 
@@ -133,6 +146,7 @@ function AppContent() {
 
               <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
               <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+              <Route path="/profile/:userId" element={<PrivateRoute><Profile /></PrivateRoute>} />
               <Route path="/create" element={<PrivateRoute><CreateStory /></PrivateRoute>} />
               <Route path="/story/:id" element={<PrivateRoute><StoryView /></PrivateRoute>} />
               <Route path="/edit-story/:id" element={<PrivateRoute><EditStory /></PrivateRoute>} />

@@ -11,36 +11,29 @@ export const createOrGetChat = async (
   targetUser: any
 ) => {
   const uid1 = currentUser.uid;
-  const uid2 = targetUser.uid;
+  const uid2 = targetUser.id || targetUser.uid;
 
-  // 🧠 ID determinístico (ordem garante unicidade)
-  const chatId =
-    uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+  const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
 
   const chatRef = doc(db, "chats", chatId);
   const chatSnap = await getDoc(chatRef);
 
-  // 🔍 Se já existe → retorna
   if (chatSnap.exists()) {
     return chatId;
   }
 
-  // 🆕 Criar novo chat
   await setDoc(chatRef, {
     participants: [uid1, uid2],
-
-    // 🔥 DADOS PARA UI
     participantsData: {
       [uid1]: {
-        name: currentUser.displayName || "Usuário",
+        name: currentUser.displayName || "Escritor",
         photoURL: currentUser.photoURL || "",
       },
       [uid2]: {
-        name: targetUser.displayName || "Usuário",
+        name: targetUser.username || targetUser.displayName || "Escritor",
         photoURL: targetUser.photoURL || "",
       },
     },
-
     createdAt: serverTimestamp(),
     lastUpdate: serverTimestamp(),
     lastMessage: "",

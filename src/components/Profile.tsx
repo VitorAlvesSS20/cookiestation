@@ -29,7 +29,6 @@ const Profile: React.FC = () => {
 
     try {
       setLoading(true);
-      // 1. Carregar dados do usuário
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
       
@@ -42,12 +41,10 @@ const Profile: React.FC = () => {
         setAuthorStatus(data.authorStatus || "");
         setWriterXP(data.writerXP || 0);
       } else {
-        // Fallback para novos usuários
         setDisplayName(user.displayName || "Escritor");
         setPhotoURL(user.photoURL || "");
       }
 
-      // 2. Carregar obras do usuário (Respeitando a regra de userId)
       const q = query(collection(db, "stories"), where("userId", "==", user.uid));
       const snap = await getDocs(q);
       setMyBooks(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -107,7 +104,6 @@ const Profile: React.FC = () => {
 
     try {
       const batch = writeBatch(db);
-      // Deletar obras
       for (const book of myBooks) {
         const caps = await getDocs(collection(db, "stories", book.id, "chapters"));
         caps.forEach(c => batch.delete(c.ref));

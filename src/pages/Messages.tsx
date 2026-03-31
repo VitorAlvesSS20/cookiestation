@@ -41,13 +41,11 @@ const Messages: React.FC = () => {
 
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       try {
-        // Mapeamos os chats e buscamos os dados REAIS dos usuários na coleção /users
         const chatPromises = snapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
           const participants: string[] = data.participants || [];
           const recipientId = participants.find((id) => id !== user.uid) || "";
 
-          // Busca o documento do usuário para garantir sincronização de Nome e Foto
           const userDocRef = doc(db, "users", recipientId);
           const userSnap = await getDoc(userDocRef);
           const userData = userSnap.exists() ? userSnap.data() : {};
@@ -55,8 +53,8 @@ const Messages: React.FC = () => {
           return {
             id: docSnap.id,
             recipientId,
-            recipientName: userData.displayName || userData.name || "Escritor",
-            recipientPhoto: userData.photoURL || userData.photo || "",
+            recipientName: userData.displayName || userData.username || "Escritor",
+            recipientPhoto: userData.photoURL || "",
             lastMessage: data.lastMessage || "",
             lastUpdate: data.lastUpdate?.toMillis 
               ? data.lastUpdate.toMillis() 
@@ -68,11 +66,9 @@ const Messages: React.FC = () => {
         setChats(resolvedChats.sort((a, b) => b.lastUpdate - a.lastUpdate));
         setLoading(false);
       } catch (err) {
-        console.error("Erro ao processar chats:", err);
         setLoading(false);
       }
     }, (error) => {
-      console.error("Erro no Listener do Firebase:", error);
       setLoading(false);
       if (error.code === 'permission-denied') {
         Toast.fire({ icon: "error", title: "Acesso negado à Estação de Mensagens." });
@@ -82,7 +78,6 @@ const Messages: React.FC = () => {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // Atualiza o activeChat se as informações do destinatário mudarem na lista principal
   useEffect(() => {
     if (activeChat) {
       const updatedChat = chats.find(c => c.id === activeChat.id);
@@ -107,7 +102,6 @@ const Messages: React.FC = () => {
       if (activeChat?.id === chatId) setActiveChat(null);
       Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
     } catch (error: any) {
-      console.error("Erro ao deletar conversa:", error);
       Toast.fire({ icon: "error", title: "Erro ao remover conversa." });
     }
   };
@@ -149,7 +143,7 @@ const Messages: React.FC = () => {
                   className="btn-delete-small" 
                   onClick={(e) => handleDeleteChat(chat.id, e)}
                 >
-                  <span className="emoji-fallback">🗑️</span>
+                  🗑️
                 </button>
               </div>
             ))

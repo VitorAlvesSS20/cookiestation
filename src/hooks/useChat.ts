@@ -16,34 +16,43 @@ export const useChat = (chatId: string) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!chatId) return;
-
-    const msgRef = collection(db, "chats", chatId, "messages");
-    const q = query(msgRef, orderBy("createdAt", "asc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setMessages(docs);
+    if (!chatId) {
       setLoading(false);
-    });
+      return;
+    }
+
+    const q = query(
+      collection(db, "chats", chatId, "messages"),
+      orderBy("createdAt", "asc")
+    );
+
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const docs = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setMessages(docs);
+        setLoading(false);
+      },
+      () => {
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [chatId]);
 
   const sendMessage = async (user: any, text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || !chatId || !user) return;
 
     const chatRef = doc(db, "chats", chatId);
     const messagesRef = collection(db, "chats", chatId, "messages");
 
     await addDoc(messagesRef, {
       senderId: user.uid,
-      senderName: user.displayName,
-      senderPhoto: user.photoURL,
+      senderName: user.displayName || "Escritor",
+      senderPhoto: user.photoURL || "",
       text: text.trim(),
       createdAt: serverTimestamp(),
     });
