@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../services/firebase";
 import { doc, getDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
+import { useGlobalAudio } from "../context/AudioContext";
 import "../styles/readingPage.css";
 
 const ReadingPage: React.FC = () => {
   const { id, chapterId } = useParams();
   const navigate = useNavigate();
+  const { playSFX } = useGlobalAudio();
 
   const [chapter, setChapter] = useState<any>(null);
   const [allChapters, setAllChapters] = useState<string[]>([]);
@@ -49,14 +51,19 @@ const ReadingPage: React.FC = () => {
   const prevId = allChapters[currentIndex - 1];
   const nextId = allChapters[currentIndex + 1];
 
+  const handleNavigation = (targetId: string) => {
+    playSFX("/sounds/pageflip.mp3");
+    navigate(`/story/${id}/read/${targetId}`);
+  };
+
   if (loading) {
-  return (
-    <div className="reading-loader-container">
-      <div className="loader-coffee">☕</div>
-      <p>Virando a página...</p>
-    </div>
-  );
-}
+    return (
+      <div className="reading-loader-container">
+        <div className="loader-coffee">☕</div>
+        <p>Virando a página...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="reading-page-layout">
@@ -83,7 +90,6 @@ const ReadingPage: React.FC = () => {
             <h1>{chapter?.title}</h1>
           </header>
 
-          {/* 🔥 IMAGEM CORRIGIDA */}
           {chapter?.chapterCover && (
             <div className="chapter-visual-wrapper">
               <img
@@ -109,9 +115,7 @@ const ReadingPage: React.FC = () => {
           <button
             className="nav-btn"
             disabled={!prevId}
-            onClick={() =>
-              navigate(`/story/${id}/read/${prevId}`)
-            }
+            onClick={() => handleNavigation(prevId)}
           >
             ← Anterior
           </button>
@@ -126,9 +130,7 @@ const ReadingPage: React.FC = () => {
           <button
             className="nav-btn primary"
             disabled={!nextId}
-            onClick={() =>
-              navigate(`/story/${id}/read/${nextId}`)
-            }
+            onClick={() => handleNavigation(nextId)}
           >
             Próximo →
           </button>

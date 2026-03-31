@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../services/firebase";
-import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
+import { collection, query, orderBy, limit, onSnapshot, where } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGlobalAudio } from "../context/AudioContext"; 
 import "../styles/home.css";
 
 interface Story {
@@ -14,7 +15,7 @@ interface Story {
   createdAt: any;
   wordCount: number;
   genre: string;
-  views?: number;
+  views: number;
 }
 
 const Home: React.FC = () => {
@@ -22,113 +23,133 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeGenre, setActiveGenre] = useState("Todos");
   const navigate = useNavigate();
+  const { playSFX } = useGlobalAudio();
 
-  const genres = ["Todos", "Fantasia", "Suspense", "Romance", "RPG", "Conto"];
+  const genres = useMemo(() => ["Todos", "Fantasia", "Suspense", "Romance", "Terror", "Conto"], []);
 
-  const fetchStories = useCallback(async (genreFilter: string) => {
+  const handleStoryClick = useCallback((id: string) => {
+    playSFX("/sounds/pageflip.mp3");
+    navigate(`/story/${id}`);
+  }, [navigate, playSFX]);
+
+  useEffect(() => {
     setLoading(true);
-    try {
-      const storiesRef = collection(db, "stories");
-      let q = query(
+    const storiesRef = collection(db, "stories");
+    
+    let q = query(
+      storiesRef,
+      where("visibility", "==", "public"),
+      orderBy("createdAt", "desc"),
+      limit(12)
+    );
+
+    if (activeGenre !== "Todos") {
+      q = query(
         storiesRef,
         where("visibility", "==", "public"),
+        where("genre", "==", activeGenre),
         orderBy("createdAt", "desc"),
         limit(12)
       );
+    }
 
-      if (genreFilter !== "Todos") {
-        q = query(
-          storiesRef,
-          where("visibility", "==", "public"),
-          where("genre", "==", genreFilter),
-          orderBy("createdAt", "desc"),
-          limit(12)
-        );
-      }
-
-      const querySnapshot = await getDocs(q);
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const data = querySnapshot.docs.map(doc => {
         const docData = doc.data();
         return {
           id: doc.id,
           ...docData,
-          // Fallbacks de segurança para evitar erros de renderização
-          wordCount: docData.wordCount || 0,
+          wordCount: Number(docData.wordCount || 0),
+          views: Number(docData.views || 0),
           authorName: docData.authorName || "Escritor Anônimo",
           title: docData.title || "Sem Título",
-          views: docData.views || 0,
           genre: docData.genre || "Conto"
-        };
-      }) as Story[];
+        } as Story;
+      });
 
       setStories(data);
-    } catch (error) {
-      console.error("Erro na Estação:", error);
-    } finally {
       setLoading(false);
-    }
-  }, []);
+    }, (error) => {
+      console.error("Erro na Estação de Dados:", error);
+      setLoading(false);
+    });
 
-  useEffect(() => {
-    fetchStories(activeGenre);
-  }, [activeGenre, fetchStories]);
+    return () => unsubscribe();
+  }, [activeGenre]);
 
   return (
-    <div className="home-container">
+    <motion.div 
+      className="home-container"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <section className="hero-banner">
         <div className="hero-overlay">
-          <div className="hero-content">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }} 
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              Sua próxima história favorita <br /> <span>começa aqui.</span>
-            </motion.h1>
-            <p>Explore mundos criados por escritores independentes.</p>
+          <motion.div 
+            className="hero-content"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+          >
+            <h1>Sua próxima história favorita <br /> <span>começa aqui.</span></h1>
+            <p>Explore mundos criados por escritores independentes e mergulhe em narrativas únicas.</p>
             <div className="hero-actions">
               <button className="btn-primary-home" onClick={() => navigate("/create")}>
                 Escrever Minha Obra
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      <nav className="genre-nav" style={{ display: 'flex', gap: '15px', marginBottom: '40px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        {genres.map(genre => (
-          <button 
+      <nav className="genre-nav">
+        {genres.map((genre, index) => (
+          <motion.button 
             key={genre}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
             className={`genre-tab ${activeGenre === genre ? 'active' : ''}`}
             onClick={() => setActiveGenre(genre)}
           >
             {genre}
-          </button>
+          </motion.button>
         ))}
       </nav>
 
       <main className="feed-main">
-        {loading ? (
-          <div className="stories-grid">
-            {[1, 2, 3, 4, 5, 6].map(n => <div key={n} className="skeleton-card" />)}
-          </div>
-        ) : (
-          <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div 
+              key="loader"
+              className="stories-grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="skeleton-card" />
+              ))}
+            </motion.div>
+          ) : (
             <motion.div 
               key={activeGenre}
               layout 
               className="stories-grid"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
             >
               {stories.length > 0 ? (
                 stories.map((story) => (
-                  <article 
+                  <motion.article 
                     key={story.id} 
+                    layout
+                    whileHover={{ y: -8, transition: { duration: 0.2 } }}
                     className="story-card" 
-                    onClick={() => navigate(`/story/${story.id}`)}
+                    onClick={() => handleStoryClick(story.id)}
                   >
                     <div className="card-image-wrapper">
                       <img 
@@ -137,39 +158,38 @@ const Home: React.FC = () => {
                         className="card-image"
                         loading="lazy" 
                       />
-                      <div className="card-badge" style={{ position: 'absolute', top: '15px', right: '15px', background: 'var(--cookie-gold)', color: 'var(--mocha-dark)', padding: '5px 12px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                        {story.genre}
-                      </div>
+                      <div className="card-badge">{story.genre}</div>
                     </div>
                     
                     <div className="card-content">
-                      <div className="card-author">
-                        <span>{story.genre}</span>
-                      </div>
                       <h3>{story.title}</h3>
-                      <p className="card-author" style={{ textTransform: 'none', letterSpacing: 'normal', color: 'var(--text-body)' }}>
-                        por <span style={{ color: 'var(--cookie-gold)' }}>{story.authorName}</span>
+                      <p className="card-author-name">
+                        por <span>{story.authorName}</span>
                       </p>
                       <div className="card-meta">
-                        <span>{(story.wordCount).toLocaleString()} palavras</span>
+                        <span>{story.wordCount.toLocaleString('pt-BR')} palavras</span>
                         <span className="dot">•</span>
                         <span className="card-stats">
-                           👁️ {story.views}
+                            👁️ {story.views.toLocaleString('pt-BR')}
                         </span>
                       </div>
                     </div>
-                  </article>
+                  </motion.article>
                 ))
               ) : (
-                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="empty-state"
+                >
                   <p>Nenhuma história encontrada nesta categoria. ☕</p>
-                </div>
+                </motion.div>
               )}
             </motion.div>
-          </AnimatePresence>
-        )}
+          )}
+        </AnimatePresence>
       </main>
-    </div>
+    </motion.div>
   );
 };
 

@@ -7,6 +7,7 @@ import {
   onSnapshot,
   doc,
   deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import ChatWindow from "../components/ChatWindow";
@@ -17,7 +18,7 @@ import "../styles/messages.css";
 
 interface Chat {
   id: string;
-  recipientId: string | undefined;
+  recipientId: string;
   recipientName: string;
   recipientPhoto: string;
   lastMessage: string;
@@ -38,22 +39,24 @@ const Messages: React.FC = () => {
       where("participants", "array-contains", user.uid)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
       try {
-        const chatData: Chat[] = snapshot.docs.map((docSnap) => {
+        // Mapeamos os chats e buscamos os dados REAIS dos usuários na coleção /users
+        const chatPromises = snapshot.docs.map(async (docSnap) => {
           const data = docSnap.data();
           const participants: string[] = data.participants || [];
-          const recipientId = participants.find((id) => id !== user.uid);
+          const recipientId = participants.find((id) => id !== user.uid) || "";
 
-          const recipientData = data.participantsData && recipientId
-              ? data.participantsData[recipientId] || {}
-              : {};
+          // Busca o documento do usuário para garantir sincronização de Nome e Foto
+          const userDocRef = doc(db, "users", recipientId);
+          const userSnap = await getDoc(userDocRef);
+          const userData = userSnap.exists() ? userSnap.data() : {};
 
           return {
             id: docSnap.id,
             recipientId,
-            recipientName: recipientData.name || "Escritor",
-            recipientPhoto: recipientData.photoURL || "",
+            recipientName: userData.displayName || userData.name || "Escritor",
+            recipientPhoto: userData.photoURL || userData.photo || "",
             lastMessage: data.lastMessage || "",
             lastUpdate: data.lastUpdate?.toMillis 
               ? data.lastUpdate.toMillis() 
@@ -61,7 +64,8 @@ const Messages: React.FC = () => {
           };
         });
 
-        setChats(chatData.sort((a, b) => b.lastUpdate - a.lastUpdate));
+        const resolvedChats = await Promise.all(chatPromises);
+        setChats(resolvedChats.sort((a, b) => b.lastUpdate - a.lastUpdate));
         setLoading(false);
       } catch (err) {
         console.error("Erro ao processar chats:", err);
@@ -78,6 +82,16 @@ const Messages: React.FC = () => {
     return () => unsubscribe();
   }, [user?.uid]);
 
+  // Atualiza o activeChat se as informações do destinatário mudarem na lista principal
+  useEffect(() => {
+    if (activeChat) {
+      const updatedChat = chats.find(c => c.id === activeChat.id);
+      if (updatedChat && (updatedChat.recipientName !== activeChat.recipientName || updatedChat.recipientPhoto !== activeChat.recipientPhoto)) {
+        setActiveChat(updatedChat);
+      }
+    }
+  }, [chats, activeChat]);
+
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation(); 
 
@@ -90,21 +104,11 @@ const Messages: React.FC = () => {
 
     try {
       await deleteDoc(doc(db, "chats", chatId));
-      
-      if (activeChat?.id === chatId) {
-        setActiveChat(null);
-      }
-      
+      if (activeChat?.id === chatId) setActiveChat(null);
       Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
     } catch (error: any) {
       console.error("Erro ao deletar conversa:", error);
-      
-      let errorMsg = "Não foi possível remover a conversa.";
-      if (error.code === 'permission-denied') {
-        errorMsg = "Você não tem permissão para apagar esta conversa.";
-      }
-
-      Toast.fire({ icon: "error", title: errorMsg });
+      Toast.fire({ icon: "error", title: "Erro ao remover conversa." });
     }
   };
 
@@ -113,7 +117,7 @@ const Messages: React.FC = () => {
       <aside className="inbox-sidebar">
         <div className="inbox-header">
           <h2>Comunidade</h2>
-          <UserSearch onSelectChat={setActiveChat} />
+          <UserSearch onSelectChat={(chat: any) => setActiveChat(chat)} />
         </div>
 
         <div className="inbox-list">
@@ -138,23 +142,19 @@ const Messages: React.FC = () => {
 
                 <div className="inbox-info">
                   <p className="inbox-name">{chat.recipientName}</p>
-                  <p className="inbox-preview">
-                    {chat.lastMessage || "Inicie uma conversa..."}
-                  </p>
+                  <p className="inbox-preview">{chat.lastMessage || "Inicie uma conversa..."}</p>
                 </div>
 
                 <button 
                   className="btn-delete-small" 
                   onClick={(e) => handleDeleteChat(chat.id, e)}
-                  title="Apagar conversa"
                 >
-                  <i className="fi fi-rr-trash"></i>
                   <span className="emoji-fallback">🗑️</span>
                 </button>
               </div>
             ))
           ) : (
-            <div className="loader-msg">Nenhuma conversa por aqui ainda.</div>
+            <div className="empty-inbox">Nenhuma conversa por aqui ainda.</div>
           )}
         </div>
       </aside>
@@ -164,7 +164,7 @@ const Messages: React.FC = () => {
           <div className="chat-display">
             <header className="chat-header">
               <button className="mobile-back-button" onClick={() => setActiveChat(null)}>
-                <i className="fi fi-rr-arrow-small-left"></i>
+                Voltar
               </button>
               <div className="chat-user-info">
                 {activeChat.recipientPhoto && <img src={activeChat.recipientPhoto} alt="" />}
