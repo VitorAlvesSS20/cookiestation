@@ -15,17 +15,15 @@ type UserData = {
 const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // Útil para monitorar mudanças de rota
+  const location = useLocation(); 
 
   const [liveUserData, setLiveUserData] = useState<UserData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  /* ========================= */
-  /* 🔥 LISTENER TEMPO REAL USER */
-  /* ========================= */
+ 
+ 
+ 
   useEffect(() => {
-    // Se não houver usuário logado, limpa o estado e não tenta buscar no DB
-    // Isso evita o erro de "Missing or Insufficient Permissions" no console
     if (!user?.uid) {
       setLiveUserData(null);
       return;
@@ -41,7 +39,6 @@ const Sidebar: React.FC = () => {
         }
       },
       (error) => {
-        // Erro silencioso se for permissão (comum no logout), mas loga outros
         if (error.code !== "permission-denied") {
           console.error("Erro ao escutar usuário:", error);
         }
@@ -51,14 +48,13 @@ const Sidebar: React.FC = () => {
     return () => unsubscribe();
   }, [user?.uid]);
 
-  // Fecha o menu automaticamente quando a rota mudar (Mobile UX)
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  /* ========================= */
-  /* 🚪 LOGOUT */
-  /* ========================= */
+ 
+ 
+ 
   const handleLogout = async () => {
     const result = await ConfirmDialog(
       "Sair da Estação?",
@@ -81,9 +77,9 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  /* ========================= */
-  /* 🧠 MEMOIZED VALUES (Performance) */
-  /* ========================= */
+ 
+ 
+ 
   const avatar = useMemo(() => 
     liveUserData?.photoURL || user?.photoURL || `https://ui-avatars.com/api/?name=${user?.displayName || "User"}&background=6b4f3b&color=fff`,
     [liveUserData?.photoURL, user?.photoURL, user?.displayName]
@@ -94,7 +90,6 @@ const Sidebar: React.FC = () => {
 
   return (
     <>
-      {/* 🍔 BOTÃO HAMBURGUER - Acessibilidade: aria-label */}
       <button
         className={`hamburger ${isOpen ? "active" : ""}`}
         onClick={() => setIsOpen(!isOpen)}
@@ -105,7 +100,6 @@ const Sidebar: React.FC = () => {
         <span />
       </button>
 
-      {/* 🌑 OVERLAY - Com animação de fade via CSS se desejar */}
       {isOpen && <div className="overlay" onClick={() => setIsOpen(false)} />}
 
       <aside className={`sidebar-container ${isOpen ? "open" : ""}`}>
@@ -117,7 +111,6 @@ const Sidebar: React.FC = () => {
           </div>
         </div>
 
-        {/* 📚 NAV - Organizado por lista para melhor SEO/Acessibilidade */}
         <nav className="sidebar-nav">
           <NavLink to="/" end className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             Início
@@ -136,7 +129,6 @@ const Sidebar: React.FC = () => {
           </NavLink>
         </nav>
 
-        {/* 👤 FOOTER */}
         <div className="sidebar-footer">
           {user && (
             <div className="user-info">

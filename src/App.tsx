@@ -26,6 +26,7 @@ const Profile = lazyWithRetry(() => import("./components/Profile"));
 const CreateStory = lazyWithRetry(() => import("./pages/CreateStory"));
 const StoryView = lazyWithRetry(() => import("./pages/StoryView"));
 const EditStory = lazyWithRetry(() => import("./pages/EditStory"));
+const StoryManage = lazyWithRetry(() => import("./pages/StoryManage"));
 const CreateChapter = lazyWithRetry(() => import("./pages/CreateChapter"));
 const ReadingPage = lazyWithRetry(() => import("./pages/ReadingPage"));
 const Messages = lazyWithRetry(() => import("./pages/Messages"));
@@ -47,7 +48,8 @@ function AppContent() {
       (location.pathname.startsWith("/story/") && (
         location.pathname.includes("/read/") ||
         location.pathname.includes("/new-chapter") ||
-        location.pathname.includes("/edit-chapter")
+        location.pathname.includes("/edit-chapter") ||
+        location.pathname.includes("/manage")
       )) ||
       location.pathname.startsWith("/edit-story/") ||
       ["/guidelines", "/privacy", "/about"].includes(location.pathname)
@@ -150,6 +152,7 @@ function AppContent() {
               <Route path="/create" element={<PrivateRoute><CreateStory /></PrivateRoute>} />
               <Route path="/story/:id" element={<PrivateRoute><StoryView /></PrivateRoute>} />
               <Route path="/edit-story/:id" element={<PrivateRoute><EditStory /></PrivateRoute>} />
+              <Route path="/story/:storyId/manage" element={<PrivateRoute><StoryManage /></PrivateRoute>} />
               <Route path="/story/:id/read/:chapterId" element={<PrivateRoute><ReadingPage /></PrivateRoute>} />
               <Route path="/story/:storyId/new-chapter" element={<PrivateRoute><CreateChapter /></PrivateRoute>} />
               <Route path="/story/:storyId/edit-chapter/:chapterId" element={<PrivateRoute><CreateChapter /></PrivateRoute>} />

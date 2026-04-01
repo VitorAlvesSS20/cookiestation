@@ -1,4 +1,3 @@
-/* comments.css */
 
 .comments-section {
   max-width: 800px;
@@ -18,7 +17,7 @@
   font-size: 1.4rem;
 }
 
-/* FORMULÁRIO */
+
 .comment-form {
   display: flex;
   gap: 15px;
@@ -94,7 +93,7 @@
   cursor: pointer;
 }
 
-/* LISTA */
+
 .comments-list {
   display: flex;
   flex-direction: column;
