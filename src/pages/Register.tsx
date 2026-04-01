@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../services/firebase";
-import { Toast } from "../utils/swal"; 
+import { Toast } from "../utils/swal";
 import "../styles/auth.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -20,42 +20,49 @@ const Register: React.FC = () => {
 
     if (password !== confirmPassword) {
       Toast.fire({
-        icon: 'warning',
-        title: 'As senhas não coincidem. Verifique seu blend!'
+        icon: "warning",
+        title: "As senhas não coincidem. Verifique seu blend!",
       });
       return;
     }
 
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
       const user = userCredential.user;
 
       await updateProfile(user, { displayName: name });
 
       const token = await user.getIdToken();
       const response = await fetch(`${API_URL}/users/sync`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      if (!response.ok) throw new Error("Erro ao sincronizar perfil com o servidor.");
-      
+      if (!response.ok)
+        throw new Error("Erro ao sincronizar perfil com o servidor.");
+
       Toast.fire({
-        icon: 'success',
-        title: 'Conta criada! Mesa reservada com sucesso. 🥐'
+        icon: "success",
+        title: "Conta criada! Mesa reservada com sucesso. 🥐",
       });
-      
-      navigate("/"); 
+
+      navigate("/");
     } catch (err: any) {
       let message = "Erro ao preparar seu cadastro. Tente novamente.";
-      if (err.code === 'auth/email-already-in-use') message = "Este e-mail já está cadastrado em nossa reserva.";
-      else if (err.code === 'auth/weak-password') message = "Senha muito fraca. Tente uma combinação mais encorpada!";
+      if (err.code === "auth/email-already-in-use")
+        message = "Este e-mail já está cadastrado em nossa reserva.";
+      else if (err.code === "auth/weak-password")
+        message = "Senha muito fraca. Tente uma combinação mais encorpada!";
 
-      Toast.fire({ icon: 'error', title: message });
+      Toast.fire({ icon: "error", title: message });
     } finally {
       setLoading(false);
     }
@@ -116,7 +123,7 @@ const Register: React.FC = () => {
               </div>
 
               <div className="input-group">
-                <label htmlFor="confirmPassword">Confirmar</label>
+                <label htmlFor="confirmPassword">Confirmar senha</label>
                 <input
                   id="confirmPassword"
                   type="password"
@@ -128,8 +135,16 @@ const Register: React.FC = () => {
               </div>
             </div>
 
-            <button type="submit" className="auth-submit-btn" disabled={loading}>
-              {loading ? <span className="loader">Preparando acesso...</span> : "Cadastrar"}
+            <button
+              type="submit"
+              className="auth-submit-btn"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="loader">Preparando acesso...</span>
+              ) : (
+                "Cadastrar"
+              )}
             </button>
           </form>
 
@@ -137,7 +152,7 @@ const Register: React.FC = () => {
             <p>
               Já é de casa?{" "}
               <button type="button" onClick={() => navigate("/login")}>
-                Fazer Login
+                Entrar
               </button>
             </p>
           </footer>
