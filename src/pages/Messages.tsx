@@ -1,19 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../services/firebase";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
-  deleteDoc,
-  getDoc,
-} from "firebase/firestore";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import ChatWindow from "../components/ChatWindow";
 import UserSearch from "../components/UserSearch";
 import { Toast, ConfirmDialog } from "../utils/swal";
-
 import "../styles/messages.css";
 
 interface Chat {
@@ -30,65 +19,81 @@ const Messages: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchingRef = useRef(false);
 
-  useEffect(() => {
-    if (!user?.uid) return;
+  const fetchChats = useCallback(async () => {
+    if (!user?.uid || fetchingRef.current) return;
 
-    const q = query(
-      collection(db, "chats"),
-      where("participants", "array-contains", user.uid)
-    );
+    fetchingRef.current = true;
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      try {
-        const chatPromises = snapshot.docs.map(async (docSnap) => {
-          const data = docSnap.data();
-          const participants: string[] = data.participants || [];
-          const recipientId = participants.find((id) => id !== user.uid) || "";
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("http://127.0.0.1:8000/chats", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-          const userDocRef = doc(db, "users", recipientId);
-          const userSnap = await getDoc(userDocRef);
-          const userData = userSnap.exists() ? userSnap.data() : {};
+      if (response.ok) {
+        const data = await response.json();
 
-          return {
-            id: docSnap.id,
-            recipientId,
-            recipientName: userData.displayName || userData.username || "Escritor",
-            recipientPhoto: userData.photoURL || "",
-            lastMessage: data.lastMessage || "",
-            lastUpdate: data.lastUpdate?.toMillis 
-              ? data.lastUpdate.toMillis() 
-              : typeof data.lastUpdate === 'number' ? data.lastUpdate : 0,
-          };
+        const chatPromises = data.map(async (chat: any) => {
+          const participants: string[] = chat.participants || [];
+          const recipientId = participants.find((id) => id !== user.uid);
+
+          if (!recipientId) return null;
+
+          try {
+            const userRes = await fetch(`http://127.0.0.1:8000/users/${recipientId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const userData = userRes.ok ? await userRes.json() : {};
+
+            return {
+              id: chat.id,
+              recipientId,
+              recipientName: userData.displayName || userData.username || "Escritor",
+              recipientPhoto: userData.photoURL || "",
+              lastMessage: chat.lastMessage || "",
+              lastUpdate: chat.lastUpdate || 0
+            };
+          } catch {
+            return {
+              id: chat.id,
+              recipientId,
+              recipientName: "Escritor",
+              recipientPhoto: "",
+              lastMessage: chat.lastMessage || "",
+              lastUpdate: chat.lastUpdate || 0
+            };
+          }
         });
 
-        const resolvedChats = await Promise.all(chatPromises);
-        setChats(resolvedChats.sort((a, b) => b.lastUpdate - a.lastUpdate));
-        setLoading(false);
-      } catch (err) {
-        setLoading(false);
-      }
-    }, (error) => {
-      setLoading(false);
-      if (error.code === 'permission-denied') {
-        Toast.fire({ icon: "error", title: "Acesso negado à Estação de Mensagens." });
-      }
-    });
+        const resolvedChats = (await Promise.all(chatPromises)).filter((c): c is Chat => c !== null);
+        const sorted = resolvedChats.sort((a, b) => b.lastUpdate - a.lastUpdate);
 
-    return () => unsubscribe();
-  }, [user?.uid]);
+        setChats(sorted);
+
+        if (activeChat) {
+          const updated = sorted.find(c => c.id === activeChat.id);
+          if (updated) setActiveChat(updated);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      fetchingRef.current = false;
+      setLoading(false);
+    }
+  }, [user, activeChat]);
 
   useEffect(() => {
-    if (activeChat) {
-      const updatedChat = chats.find(c => c.id === activeChat.id);
-      if (updatedChat && (updatedChat.recipientName !== activeChat.recipientName || updatedChat.recipientPhoto !== activeChat.recipientPhoto)) {
-        setActiveChat(updatedChat);
-      }
-    }
-  }, [chats, activeChat]);
+    fetchChats();
+    const interval = setInterval(fetchChats, 10000);
+    return () => clearInterval(interval);
+  }, [fetchChats]);
 
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
 
     const result = await ConfirmDialog(
       "Apagar conversa?",
@@ -98,10 +103,18 @@ const Messages: React.FC = () => {
     if (!result.isConfirmed) return;
 
     try {
-      await deleteDoc(doc(db, "chats", chatId));
-      if (activeChat?.id === chatId) setActiveChat(null);
-      Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
-    } catch (error: any) {
+      const token = await user?.getIdToken();
+      const response = await fetch(`http://127.0.0.1:8000/chats/${chatId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setChats(prev => prev.filter(c => c.id !== chatId));
+        if (activeChat?.id === chatId) setActiveChat(null);
+        Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
+      }
+    } catch {
       Toast.fire({ icon: "error", title: "Erro ao remover conversa." });
     }
   };
@@ -139,8 +152,8 @@ const Messages: React.FC = () => {
                   <p className="inbox-preview">{chat.lastMessage || "Inicie uma conversa..."}</p>
                 </div>
 
-                <button 
-                  className="btn-delete-small" 
+                <button
+                  className="btn-delete-small"
                   onClick={(e) => handleDeleteChat(chat.id, e)}
                 >
                   🗑️
@@ -165,10 +178,7 @@ const Messages: React.FC = () => {
                 <h3>{activeChat.recipientName}</h3>
               </div>
             </header>
-            <ChatWindow 
-              chatId={activeChat.id} 
-              recipientName={activeChat.recipientName} 
-            />
+            <ChatWindow chatId={activeChat.id} recipientName={activeChat.recipientName} />
           </div>
         ) : (
           <div className="no-chat-selected">

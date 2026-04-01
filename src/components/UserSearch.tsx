@@ -1,20 +1,25 @@
 import { useState, useEffect } from "react";
-import { db } from "../services/firebase";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-const UserSearch = ({ onSelectChat }: any) => {
+interface User {
+  id: string;
+  uid?: string;
+  displayName: string;
+  username?: string;
+  photoURL?: string;
+}
+
+interface UserSearchProps {
+  onSelectChat: (chat: { id: string; recipientName: string }) => void;
+}
+
+const UserSearch = ({ onSelectChat }: UserSearchProps) => {
   const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -22,73 +27,57 @@ const UserSearch = ({ onSelectChat }: any) => {
   }, [search]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchUsers = async () => {
       if (!user || !debouncedSearch.trim()) {
         setResults([]);
         return;
       }
 
-      const q = query(
-        collection(db, "users"),
-        where("displayName", ">=", debouncedSearch),
-        where("displayName", "<=", debouncedSearch + "\uf8ff")
-      );
+      setLoading(true);
+      try {
+        const response = await api.get(`/users/search?q=${debouncedSearch}`, {
+          signal: controller.signal
+        });
 
-      const snap = await getDocs(q);
+        const filtered = response.data.filter(
+          (u: User) => (u.id || u.uid) !== user.uid
+        );
 
-      setResults(
-        snap.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          .filter((u: any) => u.id !== user.uid)
-      );
+        setResults(filtered);
+      } catch (error: any) {
+        if (error.name !== "CanceledError") {
+          console.error(error);
+        }
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchUsers();
+    return () => controller.abort();
   }, [debouncedSearch, user]);
 
-  const startChat = async (targetUser: any) => {
+  const startChat = async (targetUser: User) => {
     if (!user) return;
 
-    const participants = [user.uid, targetUser.id].sort();
-
-    const q = query(
-      collection(db, "chats"),
-      where("participants", "==", participants)
-    );
-
-    const existing = await getDocs(q);
-
-    let chatId;
-    let recipientName = targetUser.displayName || targetUser.username;
-
-    if (!existing.empty) {
-      chatId = existing.docs[0].id;
-    } else {
-      const newChat = await addDoc(collection(db, "chats"), {
-        participants,
-        participantsData: {
-          [user.uid]: {
-            name: user.displayName || "Escritor",
-            photoURL: user.photoURL || "",
-          },
-          [targetUser.id]: {
-            name: recipientName || "Escritor",
-            photoURL: targetUser.photoURL || "",
-          },
-        },
-        lastMessage: "",
-        lastUpdate: serverTimestamp(),
+    try {
+      const response = await api.post("/chats/init", {
+        targetUserId: targetUser.id || targetUser.uid
       });
-      chatId = newChat.id;
+
+      onSelectChat({
+        id: response.data.id,
+        recipientName:
+          targetUser.displayName || targetUser.username || "Usuário"
+      });
+
+      setSearch("");
+      setResults([]);
+    } catch (error) {
+      console.error(error);
     }
-
-    onSelectChat({
-      id: chatId,
-      recipientName: recipientName,
-    });
-
-    setSearch("");
-    setResults([]);
   };
 
   if (!user) return null;
@@ -102,30 +91,47 @@ const UserSearch = ({ onSelectChat }: any) => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        {loading && (
+          <small style={{ color: "#fff", marginLeft: "10px" }}>
+            Buscando...
+          </small>
+        )}
       </div>
 
       {results.length > 0 && (
         <div className="search-results-dropdown">
           {results.map((u) => (
-            <div 
-              key={u.id} 
-              className="inbox-item" 
+            <div
+              key={u.id || u.uid}
+              className="inbox-item"
               onClick={() => startChat(u)}
-              style={{ borderBottom: "1px solid rgba(212, 163, 115, 0.1)" }}
+              style={{
+                cursor: "pointer",
+                borderBottom: "1px solid rgba(212, 163, 115, 0.1)"
+              }}
             >
               <div className="inbox-avatar">
                 {u.photoURL ? (
                   <img src={u.photoURL} alt={u.displayName} />
                 ) : (
-                  <div style={{ fontSize: "1.2rem", textAlign: "center", lineHeight: "50px" }}>☕</div>
+                  <div className="avatar-placeholder">☕</div>
                 )}
               </div>
 
               <div className="inbox-info">
-                <p className="inbox-name" style={{ color: "#fff", margin: 0 }}>
-                  {u.displayName}
+                <p
+                  className="inbox-name"
+                  style={{ color: "#fff", margin: 0 }}
+                >
+                  {u.displayName || u.username}
                 </p>
-                <p className="inbox-preview" style={{ color: "var(--cookie-gold)", fontSize: "0.75rem" }}>
+                <p
+                  className="inbox-preview"
+                  style={{
+                    color: "var(--cookie-gold)",
+                    fontSize: "0.75rem"
+                  }}
+                >
                   Clique para iniciar conversa
                 </p>
               </div>
