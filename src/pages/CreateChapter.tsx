@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db } from "../services/firebase";
-import { 
-  collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, deleteDoc 
-} from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Toast, ConfirmDialog } from "../utils/swal";
+import api from "../services/api";
 import "../styles/createStory.css";
 
 const CreateChapter: React.FC = () => {
@@ -33,14 +30,12 @@ const CreateChapter: React.FC = () => {
     const fetchChapter = async () => {
       if (chapterId) {
         try {
-          const docSnap = await getDoc(doc(db, "stories", storyId, "chapters", chapterId));
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setChapterTitle(data.title || "");
-            setContent(data.content || "");
-            setChapterCover(data.chapterCover || "");
-            setIsEditing(true);
-          }
+          const response = await api.get(`/stories/${storyId}/chapters/${chapterId}`);
+          const data = response.data;
+          setChapterTitle(data.title || "");
+          setContent(data.content || "");
+          setChapterCover(data.chapterCover || "");
+          setIsEditing(true);
         } catch (error) {
           console.error(error);
           Toast.fire({ icon: "error", title: "Erro ao carregar capítulo." });
@@ -82,34 +77,24 @@ const CreateChapter: React.FC = () => {
 
     setLoading(true);
     try {
-      const storyRef = doc(db, "stories", storyId);
-      const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
-
       const chapterData = {
         title: chapterTitle.trim(),
         content: content.trim(),
-        chapterCover: chapterCover.trim(),
-        wordCount,
-        updatedAt: serverTimestamp()
+        chapterCover: chapterCover.trim()
       };
 
       if (isEditing && chapterId) {
-        await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), chapterData);
-        Toast.fire({ icon: "success", title: "Capítulo atualizado!" });
+        await api.put(`/stories/${storyId}/chapters/${chapterId}`, chapterData);
       } else {
-        await addDoc(collection(storyRef, "chapters"), {
-          ...chapterData,
-          createdAt: serverTimestamp()
-        });
-
-        await updateDoc(storyRef, {
-          chapterCount: increment(1),
-          lastUpdate: serverTimestamp()
-        });
-
-        localStorage.removeItem(`draft_chapter_${storyId}`);
-        Toast.fire({ icon: "success", title: "Capítulo publicado! 🍪" });
+        await api.post(`/stories/${storyId}/chapters`, chapterData);
       }
+
+      if (!isEditing) localStorage.removeItem(`draft_chapter_${storyId}`);
+      
+      Toast.fire({ 
+        icon: "success", 
+        title: isEditing ? "Capítulo atualizado!" : "Capítulo publicado! 🍪" 
+      });
 
       navigate(`/story/${storyId}`);
     } catch (e) {
@@ -126,10 +111,7 @@ const CreateChapter: React.FC = () => {
 
     setLoading(true);
     try {
-      await deleteDoc(doc(db, "stories", storyId, "chapters", chapterId));
-      await updateDoc(doc(db, "stories", storyId), {
-        chapterCount: increment(-1)
-      });
+      await api.delete(`/stories/${storyId}/chapters/${chapterId}`);
       Toast.fire({ icon: "success", title: "Capítulo removido." });
       navigate(`/story/${storyId}`);
     } catch {

@@ -1,16 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { db } from "../services/firebase";
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  query,
-  orderBy,
-  updateDoc,
-  doc,
-  serverTimestamp,
-  getDoc,
-} from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 
 const ChatWindow = ({ chatId }: any) => {
@@ -31,37 +19,35 @@ const ChatWindow = ({ chatId }: any) => {
   }, [messages]);
 
   useEffect(() => {
-    if (!chatId || !user?.uid) return;
+    if (!chatId || !user) return;
 
-    const checkAccess = async () => {
-      const chatSnap = await getDoc(doc(db, "chats", chatId));
-      if (chatSnap.exists()) {
-        const data = chatSnap.data();
-        if (data.participants?.includes(user.uid)) {
+    const fetchMessages = async () => {
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch(`http://localhost:8000/chats/${chatId}/messages`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setMessages(data);
           setCanRead(true);
+        } else if (response.status === 403) {
+          setCanRead(false);
         }
+      } catch (error) {
+        console.error("Erro ao carregar chat:", error);
       }
     };
 
-    checkAccess();
+    fetchMessages();
+    
+    // Simula o tempo real com polling a cada 3 segundos
+    // Idealmente, aqui você usaria WebSockets ou Server-Sent Events (SSE)
+    const interval = setInterval(fetchMessages, 3000);
 
-    const q = query(
-      collection(db, "chats", chatId, "messages"),
-      orderBy("createdAt", "asc")
-    );
-
-    const unsub = onSnapshot(q, (snap) => {
-      const msgs = snap.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      }));
-      setMessages(msgs);
-    }, (error) => {
-      console.error(error);
-    });
-
-    return () => unsub();
-  }, [chatId, user?.uid]);
+    return () => clearInterval(interval);
+  }, [chatId, user]);
 
   const sendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -71,19 +57,29 @@ const ChatWindow = ({ chatId }: any) => {
     setText(""); 
 
     try {
-      await addDoc(collection(db, "chats", chatId, "messages"), {
-        text: currentText,
-        userId: user.uid,
-        createdAt: serverTimestamp(),
-        seen: false,
+      const token = await user.getIdToken();
+      const response = await fetch(`http://localhost:8000/chats/${chatId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: currentText })
       });
 
-      await updateDoc(doc(db, "chats", chatId), {
-        lastMessage: currentText,
-        lastUpdate: serverTimestamp(),
-      });
+      if (!response.ok) throw new Error();
+      
+      // Atualiza localmente para resposta imediata (Optimistic UI)
+      setMessages(prev => [...prev, { 
+        id: Date.now().toString(), 
+        text: currentText, 
+        userId: user.uid,
+        createdAt: new Date().toISOString()
+      }]);
+
     } catch (error) {
       setText(currentText);
+      console.error("Erro ao enviar mensagem");
     }
   };
 

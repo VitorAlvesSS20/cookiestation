@@ -1,19 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../services/firebase";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  doc,
-  deleteDoc,
-  getDoc,
-} from "firebase/firestore";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
 import ChatWindow from "../components/ChatWindow";
 import UserSearch from "../components/UserSearch";
 import { Toast, ConfirmDialog } from "../utils/swal";
-
 import "../styles/messages.css";
 
 interface Chat {
@@ -31,64 +20,80 @@ const Messages: React.FC = () => {
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchChats = useCallback(async () => {
     if (!user?.uid) return;
 
-    const q = query(
-      collection(db, "chats"),
-      where("participants", "array-contains", user.uid)
-    );
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('http://localhost:8000/chats', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
 
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      try {
-        const chatPromises = snapshot.docs.map(async (docSnap) => {
-          const data = docSnap.data();
-          const participants: string[] = data.participants || [];
-          const recipientId = participants.find((id) => id !== user.uid) || "";
+      if (response.ok) {
+        const data = await response.json();
+        
+        const chatPromises = data.map(async (chat: any) => {
+          const participants: string[] = chat.participants || [];
+          const recipientId = participants.find((id) => id !== user.uid);
 
-          const userDocRef = doc(db, "users", recipientId);
-          const userSnap = await getDoc(userDocRef);
-          const userData = userSnap.exists() ? userSnap.data() : {};
+          if (!recipientId) return null;
 
-          return {
-            id: docSnap.id,
-            recipientId,
-            recipientName: userData.displayName || userData.username || "Escritor",
-            recipientPhoto: userData.photoURL || "",
-            lastMessage: data.lastMessage || "",
-            lastUpdate: data.lastUpdate?.toMillis 
-              ? data.lastUpdate.toMillis() 
-              : typeof data.lastUpdate === 'number' ? data.lastUpdate : 0,
-          };
+          try {
+            const userRes = await fetch(`http://localhost:8000/users/${recipientId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const userData = userRes.ok ? await userRes.json() : {};
+
+            return {
+              id: chat.id,
+              recipientId,
+              recipientName: userData.displayName || userData.username || "Escritor",
+              recipientPhoto: userData.photoURL || "",
+              lastMessage: chat.lastMessage || "",
+              lastUpdate: chat.lastUpdate || 0,
+            };
+          } catch {
+            return {
+              id: chat.id,
+              recipientId,
+              recipientName: "Escritor",
+              recipientPhoto: "",
+              lastMessage: chat.lastMessage || "",
+              lastUpdate: chat.lastUpdate || 0,
+            };
+          }
         });
 
-        const resolvedChats = await Promise.all(chatPromises);
+        const resolvedChats = (await Promise.all(chatPromises)).filter((c): c is Chat => c !== null);
         setChats(resolvedChats.sort((a, b) => b.lastUpdate - a.lastUpdate));
-        setLoading(false);
-      } catch (err) {
-        setLoading(false);
       }
-    }, (error) => {
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoading(false);
-      if (error.code === 'permission-denied') {
-        Toast.fire({ icon: "error", title: "Acesso negado à Estação de Mensagens." });
-      }
-    });
+    }
+  }, [user]);
 
-    return () => unsubscribe();
-  }, [user?.uid]);
+  useEffect(() => {
+    fetchChats();
+    const interval = setInterval(fetchChats, 10000);
+    return () => clearInterval(interval);
+  }, [fetchChats]);
 
   useEffect(() => {
     if (activeChat) {
       const updatedChat = chats.find(c => c.id === activeChat.id);
-      if (updatedChat && (updatedChat.recipientName !== activeChat.recipientName || updatedChat.recipientPhoto !== activeChat.recipientPhoto)) {
-        setActiveChat(updatedChat);
+      if (updatedChat) {
+        if (updatedChat.recipientName !== activeChat.recipientName || updatedChat.recipientPhoto !== activeChat.recipientPhoto) {
+          setActiveChat(updatedChat);
+        }
       }
     }
   }, [chats, activeChat]);
 
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
 
     const result = await ConfirmDialog(
       "Apagar conversa?",
@@ -98,10 +103,18 @@ const Messages: React.FC = () => {
     if (!result.isConfirmed) return;
 
     try {
-      await deleteDoc(doc(db, "chats", chatId));
-      if (activeChat?.id === chatId) setActiveChat(null);
-      Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
-    } catch (error: any) {
+      const token = await user?.getIdToken();
+      const response = await fetch(`http://localhost:8000/chats/${chatId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setChats(prev => prev.filter(c => c.id !== chatId));
+        if (activeChat?.id === chatId) setActiveChat(null);
+        Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
+      }
+    } catch (error) {
       Toast.fire({ icon: "error", title: "Erro ao remover conversa." });
     }
   };

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../services/firebase";
+import { auth } from "../services/firebase";
 import { Toast } from "../utils/swal"; 
 import "../styles/auth.css";
 
@@ -32,15 +31,18 @@ const Register: React.FC = () => {
 
       await updateProfile(user, { displayName: name });
 
-      await setDoc(doc(db, "users", user.uid), {
-        displayName: name,
-        email: email,
-        createdAt: serverTimestamp(),
-        photoURL: "",
-        bio: "",
-        location: "Brasil",
-        online: true
+      const token = await user.getIdToken();
+      const response = await fetch('http://localhost:8000/users/sync', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
+
+      if (!response.ok) {
+        throw new Error("Erro ao sincronizar perfil com o servidor.");
+      }
       
       Toast.fire({
         icon: 'success',
