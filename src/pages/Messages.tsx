@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import ChatWindow from "../components/ChatWindow";
 import UserSearch from "../components/UserSearch";
@@ -19,19 +19,22 @@ const Messages: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchingRef = useRef(false);
 
   const fetchChats = useCallback(async () => {
-    if (!user?.uid) return;
+    if (!user?.uid || fetchingRef.current) return;
+
+    fetchingRef.current = true;
 
     try {
       const token = await user.getIdToken();
-      const response = await fetch('http://localhost:8000/chats', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch("http://127.0.0.1:8000/chats", {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.ok) {
         const data = await response.json();
-        
+
         const chatPromises = data.map(async (chat: any) => {
           const participants: string[] = chat.participants || [];
           const recipientId = participants.find((id) => id !== user.uid);
@@ -39,10 +42,10 @@ const Messages: React.FC = () => {
           if (!recipientId) return null;
 
           try {
-            const userRes = await fetch(`http://localhost:8000/users/${recipientId}`, {
-              headers: { 'Authorization': `Bearer ${token}` }
+            const userRes = await fetch(`http://127.0.0.1:8000/users/${recipientId}`, {
+              headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             const userData = userRes.ok ? await userRes.json() : {};
 
             return {
@@ -51,7 +54,7 @@ const Messages: React.FC = () => {
               recipientName: userData.displayName || userData.username || "Escritor",
               recipientPhoto: userData.photoURL || "",
               lastMessage: chat.lastMessage || "",
-              lastUpdate: chat.lastUpdate || 0,
+              lastUpdate: chat.lastUpdate || 0
             };
           } catch {
             return {
@@ -60,37 +63,34 @@ const Messages: React.FC = () => {
               recipientName: "Escritor",
               recipientPhoto: "",
               lastMessage: chat.lastMessage || "",
-              lastUpdate: chat.lastUpdate || 0,
+              lastUpdate: chat.lastUpdate || 0
             };
           }
         });
 
         const resolvedChats = (await Promise.all(chatPromises)).filter((c): c is Chat => c !== null);
-        setChats(resolvedChats.sort((a, b) => b.lastUpdate - a.lastUpdate));
+        const sorted = resolvedChats.sort((a, b) => b.lastUpdate - a.lastUpdate);
+
+        setChats(sorted);
+
+        if (activeChat) {
+          const updated = sorted.find(c => c.id === activeChat.id);
+          if (updated) setActiveChat(updated);
+        }
       }
     } catch (err) {
       console.error(err);
     } finally {
+      fetchingRef.current = false;
       setLoading(false);
     }
-  }, [user]);
+  }, [user, activeChat]);
 
   useEffect(() => {
     fetchChats();
     const interval = setInterval(fetchChats, 10000);
     return () => clearInterval(interval);
   }, [fetchChats]);
-
-  useEffect(() => {
-    if (activeChat) {
-      const updatedChat = chats.find(c => c.id === activeChat.id);
-      if (updatedChat) {
-        if (updatedChat.recipientName !== activeChat.recipientName || updatedChat.recipientPhoto !== activeChat.recipientPhoto) {
-          setActiveChat(updatedChat);
-        }
-      }
-    }
-  }, [chats, activeChat]);
 
   const handleDeleteChat = async (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -104,9 +104,9 @@ const Messages: React.FC = () => {
 
     try {
       const token = await user?.getIdToken();
-      const response = await fetch(`http://localhost:8000/chats/${chatId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await fetch(`http://127.0.0.1:8000/chats/${chatId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       if (response.ok) {
@@ -114,7 +114,7 @@ const Messages: React.FC = () => {
         if (activeChat?.id === chatId) setActiveChat(null);
         Toast.fire({ icon: "success", title: "Conversa removida! ☕" });
       }
-    } catch (error) {
+    } catch {
       Toast.fire({ icon: "error", title: "Erro ao remover conversa." });
     }
   };
@@ -152,8 +152,8 @@ const Messages: React.FC = () => {
                   <p className="inbox-preview">{chat.lastMessage || "Inicie uma conversa..."}</p>
                 </div>
 
-                <button 
-                  className="btn-delete-small" 
+                <button
+                  className="btn-delete-small"
                   onClick={(e) => handleDeleteChat(chat.id, e)}
                 >
                   🗑️
@@ -178,10 +178,7 @@ const Messages: React.FC = () => {
                 <h3>{activeChat.recipientName}</h3>
               </div>
             </header>
-            <ChatWindow 
-              chatId={activeChat.id} 
-              recipientName={activeChat.recipientName} 
-            />
+            <ChatWindow chatId={activeChat.id} recipientName={activeChat.recipientName} />
           </div>
         ) : (
           <div className="no-chat-selected">

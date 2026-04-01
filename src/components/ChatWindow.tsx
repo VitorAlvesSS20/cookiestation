@@ -7,6 +7,7 @@ const ChatWindow = ({ chatId }: any) => {
   const [text, setText] = useState("");
   const [canRead, setCanRead] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fetchingRef = useRef(false);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -16,16 +17,21 @@ const ChatWindow = ({ chatId }: any) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages.length]);
 
   useEffect(() => {
     if (!chatId || !user) return;
 
+    let interval: any;
+
     const fetchMessages = async () => {
+      if (fetchingRef.current) return;
+      fetchingRef.current = true;
+
       try {
         const token = await user.getIdToken();
-        const response = await fetch(`http://localhost:8000/chats/${chatId}/messages`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch(`http://127.0.0.1:8000/chats/${chatId}/messages`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
 
         if (response.ok) {
@@ -36,15 +42,14 @@ const ChatWindow = ({ chatId }: any) => {
           setCanRead(false);
         }
       } catch (error) {
-        console.error("Erro ao carregar chat:", error);
+        console.error(error);
+      } finally {
+        fetchingRef.current = false;
       }
     };
 
     fetchMessages();
-    
-    // Simula o tempo real com polling a cada 3 segundos
-    // Idealmente, aqui você usaria WebSockets ou Server-Sent Events (SSE)
-    const interval = setInterval(fetchMessages, 3000);
+    interval = setInterval(fetchMessages, 3000);
 
     return () => clearInterval(interval);
   }, [chatId, user]);
@@ -54,30 +59,31 @@ const ChatWindow = ({ chatId }: any) => {
     if (!text.trim() || !user || !chatId) return;
 
     const currentText = text.trim();
-    setText(""); 
+    setText("");
+
+    const optimisticMessage = {
+      id: Date.now().toString(),
+      text: currentText,
+      userId: user.uid,
+      createdAt: new Date().toISOString()
+    };
+
+    setMessages(prev => [...prev, optimisticMessage]);
 
     try {
       const token = await user.getIdToken();
-      const response = await fetch(`http://localhost:8000/chats/${chatId}/messages`, {
-        method: 'POST',
+      const response = await fetch(`http://127.0.0.1:8000/chats/${chatId}/messages`, {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ text: currentText })
       });
 
       if (!response.ok) throw new Error();
-      
-      // Atualiza localmente para resposta imediata (Optimistic UI)
-      setMessages(prev => [...prev, { 
-        id: Date.now().toString(), 
-        text: currentText, 
-        userId: user.uid,
-        createdAt: new Date().toISOString()
-      }]);
-
     } catch (error) {
+      setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
       setText(currentText);
       console.error("Erro ao enviar mensagem");
     }

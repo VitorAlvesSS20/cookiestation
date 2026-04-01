@@ -40,11 +40,14 @@ const UserSearch = ({ onSelectChat }: UserSearchProps) => {
         const response = await api.get(`/users/search?q=${debouncedSearch}`, {
           signal: controller.signal
         });
-        
-        const filtered = response.data.filter((u: User) => (u.id || u.uid) !== user.uid);
+
+        const filtered = response.data.filter(
+          (u: User) => (u.id || u.uid) !== user.uid
+        );
+
         setResults(filtered);
       } catch (error: any) {
-        if (error.name !== 'CanceledError') {
+        if (error.name !== "CanceledError") {
           console.error(error);
         }
       } finally {
@@ -60,15 +63,14 @@ const UserSearch = ({ onSelectChat }: UserSearchProps) => {
     if (!user) return;
 
     try {
-      const response = await api.post("/chats", {
-        targetUserId: targetUser.id,
-        targetUserName: targetUser.displayName || targetUser.username,
-        targetUserPhoto: targetUser.photoURL || ""
+      const response = await api.post("/chats/init", {
+        targetUserId: targetUser.id || targetUser.uid
       });
 
       onSelectChat({
         id: response.data.id,
-        recipientName: targetUser.displayName || targetUser.username || "Usuário",
+        recipientName:
+          targetUser.displayName || targetUser.username || "Usuário"
       });
 
       setSearch("");
@@ -89,17 +91,24 @@ const UserSearch = ({ onSelectChat }: UserSearchProps) => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        {loading && <small style={{ color: "#fff", marginLeft: "10px" }}>Buscando...</small>}
+        {loading && (
+          <small style={{ color: "#fff", marginLeft: "10px" }}>
+            Buscando...
+          </small>
+        )}
       </div>
 
       {results.length > 0 && (
         <div className="search-results-dropdown">
           {results.map((u) => (
-            <div 
-              key={u.id} 
-              className="inbox-item" 
+            <div
+              key={u.id || u.uid}
+              className="inbox-item"
               onClick={() => startChat(u)}
-              style={{ cursor: 'pointer', borderBottom: "1px solid rgba(212, 163, 115, 0.1)" }}
+              style={{
+                cursor: "pointer",
+                borderBottom: "1px solid rgba(212, 163, 115, 0.1)"
+              }}
             >
               <div className="inbox-avatar">
                 {u.photoURL ? (
@@ -110,10 +119,19 @@ const UserSearch = ({ onSelectChat }: UserSearchProps) => {
               </div>
 
               <div className="inbox-info">
-                <p className="inbox-name" style={{ color: "#fff", margin: 0 }}>
+                <p
+                  className="inbox-name"
+                  style={{ color: "#fff", margin: 0 }}
+                >
                   {u.displayName || u.username}
                 </p>
-                <p className="inbox-preview" style={{ color: "var(--cookie-gold)", fontSize: "0.75rem" }}>
+                <p
+                  className="inbox-preview"
+                  style={{
+                    color: "var(--cookie-gold)",
+                    fontSize: "0.75rem"
+                  }}
+                >
                   Clique para iniciar conversa
                 </p>
               </div>
