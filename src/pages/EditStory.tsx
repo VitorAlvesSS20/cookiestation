@@ -5,6 +5,21 @@ import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import "../styles/storyDetail.css";
 
+const GENRES = [
+  "Ação",
+  "Aventura",
+  "Comédia",
+  "Conto",
+  "Drama",
+  "Fantasia",
+  "Ficção Científica",
+  "Mistério",
+  "Romance",
+  "Suspense",
+  "Terror",
+  "Sobrenatural",
+];
+
 const EditStory: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -13,7 +28,7 @@ const EditStory: React.FC = () => {
   const [title, setTitle] = useState("");
   const [synopsis, setSynopsis] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
-  const [genre, setGenre] = useState("Geral");
+  const [genres, setGenres] = useState<string[]>(["Conto"]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [, setIsOwner] = useState(false);
@@ -35,16 +50,31 @@ const EditStory: React.FC = () => {
           setTitle(data.title || "");
           setSynopsis(data.synopsis || data.sinopse || "");
           setCoverUrl(data.coverUrl || "");
-          setGenre(data.genre || "Geral");
+          setGenres(
+            Array.isArray(data.genres)
+              ? data.genres
+              : data.genre
+                ? [data.genre]
+                : ["Conto"],
+          );
         }
-      } catch (error) {
-        console.error("Erro ao buscar história:", error);
+      } catch {
       } finally {
         setFetching(false);
       }
     };
     fetchStory();
   }, [id, user, navigate]);
+
+  const toggleGenre = (g: string) => {
+    if (genres.includes(g)) {
+      const updated = genres.filter((item) => item !== g);
+      setGenres(updated.length > 0 ? updated : ["Conto"]);
+    } else {
+      if (genres.length >= 5) return;
+      setGenres([...genres, g]);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!id) return;
@@ -55,11 +85,11 @@ const EditStory: React.FC = () => {
         title,
         synopsis,
         coverUrl,
-        genre,
-        updatedAt: new Date()
+        genres,
+        updatedAt: new Date(),
       });
       navigate(`/story/${id}`);
-    } catch (error) {
+    } catch {
       alert("Erro ao salvar alterações.");
     } finally {
       setLoading(false);
@@ -67,21 +97,26 @@ const EditStory: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!id || !window.confirm("Deseja mesmo apagar este livro e todos os seus capítulos? ☕")) return;
+    if (
+      !id ||
+      !window.confirm(
+        "Deseja mesmo apagar este livro e todos os seus capítulos? ☕",
+      )
+    )
+      return;
     try {
       await deleteDoc(doc(db, "stories", id));
       navigate("/");
-    } catch (error) {
-      console.error(error);
-    }
+    } catch {}
   };
 
-  if (fetching) return (
-    <div className="global-loader">
-      <span>☕</span>
-      <p>Moendo os grãos da sua história...</p>
-    </div>
-  );
+  if (fetching)
+    return (
+      <div className="global-loader">
+        <span>☕</span>
+        <p>Moendo os grãos da sua história...</p>
+      </div>
+    );
 
   return (
     <div className="detail-page fade-in">
@@ -116,13 +151,28 @@ const EditStory: React.FC = () => {
 
           <div className="input-field">
             <label>Gênero</label>
-            <select value={genre} onChange={(e) => setGenre(e.target.value)}>
-              <option value="Geral">Geral</option>
-              <option value="Fantasia">Fantasia</option>
-              <option value="Romance">Romance</option>
-              <option value="Suspense">Suspense</option>
-              <option value="Terror">Terror</option>
-            </select>
+            <div className="genre-select-container">
+              {GENRES.map((g) => {
+                const isActive = genres.includes(g);
+                const isLimitReached = genres.length >= 5 && !isActive;
+
+                return (
+                  <div
+                    key={g}
+                    className={`genre-chip ${isActive ? "active" : ""} ${
+                      isLimitReached ? "disabled" : ""
+                    }`}
+                    onClick={() => {
+                      if (!isLimitReached) toggleGenre(g);
+                    }}
+                  >
+                    {g}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="genre-limit">{genres.length}/5 selecionados</div>
           </div>
 
           <div className="input-field">
@@ -140,7 +190,11 @@ const EditStory: React.FC = () => {
           <button className="delete-btn" onClick={handleDelete}>
             Deletar Livro
           </button>
-          <button className="save-btn" onClick={handleUpdate} disabled={loading}>
+          <button
+            className="save-btn"
+            onClick={handleUpdate}
+            disabled={loading}
+          >
             {loading ? "Salvando..." : "Salvar Alterações"}
           </button>
         </footer>

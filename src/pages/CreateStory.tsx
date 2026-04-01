@@ -1,18 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../services/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Toast } from "../utils/swal";
 import { isContentAllowed } from "../services/moderation";
 import "../styles/createStory.css";
 
+const GENRES = [
+  "Ação",
+  "Aventura",
+  "Comédia",
+  "Conto",
+  "Drama",
+  "Fantasia",
+  "Ficção Científica",
+  "Mistério",
+  "Romance",
+  "Suspense",
+  "Terror",
+  "Sobrenatural",
+];
+
 const CreateStory: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
-  const [genre, setGenre] = useState("Conto");
+  const [genres, setGenres] = useState<string[]>(["Conto"]);
   const [synopsis, setSynopsis] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
   const [visibility, setVisibility] = useState("public");
@@ -22,11 +43,11 @@ const CreateStory: React.FC = () => {
     const saved = localStorage.getItem("cookie_book_base");
     if (saved) {
       const data = JSON.parse(saved);
-      setTitle(data.title || "");
-      setGenre(data.genre || "Conto");
-      setSynopsis(data.synopsis || "");
-      setCoverUrl(data.coverUrl || "");
-      setVisibility(data.visibility || "public");
+      setTitle(data.title ?? "");
+      setGenres(data.genres ?? (data.genre ? [data.genre] : ["Conto"]));
+      setSynopsis(data.synopsis ?? "");
+      setCoverUrl(data.coverUrl ?? "");
+      setVisibility(data.visibility ?? "public");
     }
   }, []);
 
@@ -35,13 +56,23 @@ const CreateStory: React.FC = () => {
       if (title.trim() || synopsis.trim()) {
         localStorage.setItem(
           "cookie_book_base",
-          JSON.stringify({ title, genre, synopsis, coverUrl, visibility })
+          JSON.stringify({ title, genres, synopsis, coverUrl, visibility }),
         );
       }
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [title, genre, synopsis, coverUrl, visibility]);
+  }, [title, genres, synopsis, coverUrl, visibility]);
+
+  const toggleGenre = (g: string) => {
+    if (genres.includes(g)) {
+      const updated = genres.filter((item) => item !== g);
+      setGenres(updated.length > 0 ? updated : ["Conto"]);
+    } else {
+      if (genres.length >= 5) return;
+      setGenres([...genres, g]);
+    }
+  };
 
   const handleCreateBook = async () => {
     if (!user) {
@@ -50,12 +81,15 @@ const CreateStory: React.FC = () => {
     }
 
     if (!title.trim() || !synopsis.trim()) {
-      Toast.fire({ icon: "warning", title: "Dê um nome e uma sinopse à sua obra! 🖋️" });
+      Toast.fire({
+        icon: "warning",
+        title: "Dê um nome e uma sinopse à sua obra!",
+      });
       return;
     }
 
     if (!isContentAllowed(title + " " + synopsis)) {
-      Toast.fire({ icon: "error", title: "Conteúdo não permitido pelas diretrizes." });
+      Toast.fire({ icon: "error", title: "Conteúdo não permitido." });
       return;
     }
 
@@ -65,17 +99,20 @@ const CreateStory: React.FC = () => {
       const storyData = {
         title: title.trim(),
         synopsis: synopsis.trim(),
-        genre,
+        genres,
         visibility,
         userId: user.uid,
-        authorName: user.displayName || "Escritor Anônimo",
+        authorName: user.displayName ?? "Escritor Anônimo",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        coverUrl: coverUrl.trim() || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
+        coverUrl:
+          coverUrl.trim() ||
+          "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
         chapterCount: 0,
         status: "writing",
         likes: [],
         likesCount: 0,
+        views: 0,
       };
 
       await addDoc(collection(db, "stories"), storyData);
@@ -86,16 +123,15 @@ const CreateStory: React.FC = () => {
 
       localStorage.removeItem("cookie_book_base");
 
-      Toast.fire({ 
-        icon: "success", 
-        title: "Obra registrada com sucesso! 🍪",
-        text: "Sua história já está na estante."
+      Toast.fire({
+        icon: "success",
+        title: "Obra registrada com sucesso!",
+        text: "Sua história já está na estante.",
       });
 
       navigate("/profile");
-    } catch (e) {
-      console.error(e);
-      Toast.fire({ icon: "error", title: "Ops! Ocorreu um erro ao salvar." });
+    } catch {
+      Toast.fire({ icon: "error", title: "Erro ao salvar." });
     } finally {
       setLoading(false);
     }
@@ -115,13 +151,13 @@ const CreateStory: React.FC = () => {
               onClick={handleCreateBook}
               disabled={loading}
             >
-              {loading ? "Preparando Café..." : "Publicar Obra"}
+              {loading ? "Preparando..." : "Publicar Obra"}
             </button>
           </div>
         </header>
 
         <main className="create-main-form">
-          <h1 className="form-step-title">Novo Livro na Estante</h1>
+          <h1 className="form-step-title">Novo Livro</h1>
 
           <div className="field">
             <input
@@ -132,17 +168,39 @@ const CreateStory: React.FC = () => {
             />
           </div>
 
-          <div className="metadata-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          <div
+            className="metadata-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "20px",
+              marginBottom: "20px",
+            }}
+          >
             <div className="field">
               <label className="label-url">Gênero</label>
-              <select className="url-input" value={genre} onChange={(e) => setGenre(e.target.value)}>
-                <option>Conto</option>
-                <option>Fantasia</option>
-                <option>Terror</option>
-                <option>Sci-Fi</option>
-                <option>Romance</option>
-                <option>Aventura</option>
-              </select>
+              <div className="genre-select-container">
+                {GENRES.map((g) => {
+                  const isActive = genres.includes(g);
+                  const isLimitReached = genres.length >= 5 && !isActive;
+
+                  return (
+                    <div
+                      key={g}
+                      className={`genre-chip ${isActive ? "active" : ""} ${
+                        isLimitReached ? "disabled" : ""
+                      }`}
+                      onClick={() => {
+                        if (!isLimitReached) toggleGenre(g);
+                      }}
+                    >
+                      {g}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="genre-limit">{genres.length}/5 selecionados</div>
             </div>
 
             <div className="field">
@@ -159,34 +217,24 @@ const CreateStory: React.FC = () => {
           </div>
 
           <div className="field">
-            <label className="label-url">Link da Capa do Livro</label>
+            <label className="label-url">Link da Capa</label>
             <input
               className="url-input"
               type="text"
               value={coverUrl}
               onChange={(e) => setCoverUrl(e.target.value)}
-              placeholder="Cole a URL da imagem aqui..."
+              placeholder="URL da imagem"
             />
-            {coverUrl && (
-              <div className="preview-container" style={{ maxHeight: '250px' }}>
-                <img 
-                  src={coverUrl} 
-                  alt="Preview da Capa" 
-                  className="chapter-cover-preview"
-                  onError={(e) => (e.currentTarget.src = "https://via.placeholder.com/400x600?text=Capa+Invalida")}
-                />
-              </div>
-            )}
           </div>
 
           <div className="field">
             <label className="label-url">Sinopse</label>
             <textarea
               className="main-content-input"
-              style={{ minHeight: "200px", fontSize: "1rem" }}
+              style={{ minHeight: "200px" }}
               value={synopsis}
               onChange={(e) => setSynopsis(e.target.value)}
-              placeholder="Sobre o que é o seu mundo?"
+              placeholder="Sobre o que é sua história?"
             />
           </div>
         </main>

@@ -1,22 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../services/firebase";
-import { 
-  collection, addDoc, serverTimestamp, doc, updateDoc, increment, getDoc, deleteDoc 
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  increment,
+  getDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Toast, ConfirmDialog } from "../utils/swal";
 import "../styles/createStory.css";
 
 const CreateChapter: React.FC = () => {
-  const { storyId, chapterId } = useParams<{ storyId: string, chapterId: string }>();
+  const { storyId, chapterId } = useParams<{
+    storyId: string;
+    chapterId: string;
+  }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [chapterTitle, setChapterTitle] = useState("");
   const [content, setContent] = useState("");
-  const [chapterCover, setChapterCover] = useState(""); 
+  const [chapterCover, setChapterCover] = useState("");
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -33,25 +43,26 @@ const CreateChapter: React.FC = () => {
     const fetchChapter = async () => {
       if (chapterId) {
         try {
-          const docSnap = await getDoc(doc(db, "stories", storyId, "chapters", chapterId));
+          const ref = doc(db, "stories", storyId, "chapters", chapterId);
+          const docSnap = await getDoc(ref);
+
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setChapterTitle(data.title || "");
-            setContent(data.content || "");
-            setChapterCover(data.chapterCover || "");
+            setChapterTitle(data.title ?? "");
+            setContent(data.content ?? "");
+            setChapterCover(data.chapterCover ?? "");
             setIsEditing(true);
           }
-        } catch (error) {
-          console.error(error);
+        } catch {
           Toast.fire({ icon: "error", title: "Erro ao carregar capítulo." });
         }
       } else {
         const saved = localStorage.getItem(`draft_chapter_${storyId}`);
         if (saved) {
           const data = JSON.parse(saved);
-          setChapterTitle(data.title || "");
-          setContent(data.content || "");
-          setChapterCover(data.cover || "");
+          setChapterTitle(data.title ?? "");
+          setContent(data.content ?? "");
+          setChapterCover(data.cover ?? "");
         }
       }
     };
@@ -66,21 +77,30 @@ const CreateChapter: React.FC = () => {
       if (chapterTitle.trim() || content.trim()) {
         localStorage.setItem(
           `draft_chapter_${storyId}`,
-          JSON.stringify({ title: chapterTitle, content, cover: chapterCover })
+          JSON.stringify({
+            title: chapterTitle,
+            content,
+            cover: chapterCover,
+          }),
         );
       }
     }, 2000);
-    
+
     return () => clearTimeout(timer);
   }, [chapterTitle, content, chapterCover, storyId, isEditing]);
 
   const handlePublish = async () => {
     if (!user || !storyId) return;
+
     if (!chapterTitle.trim() || !content.trim()) {
-      return Toast.fire({ icon: "warning", title: "Título e texto são obrigatórios!" });
+      return Toast.fire({
+        icon: "warning",
+        title: "Título e texto são obrigatórios!",
+      });
     }
 
     setLoading(true);
+
     try {
       const storyRef = doc(db, "stories", storyId);
       const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
@@ -90,21 +110,25 @@ const CreateChapter: React.FC = () => {
         content: content.trim(),
         chapterCover: chapterCover.trim(),
         wordCount,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       if (isEditing && chapterId) {
-        await updateDoc(doc(db, "stories", storyId, "chapters", chapterId), chapterData);
+        await updateDoc(
+          doc(db, "stories", storyId, "chapters", chapterId),
+          chapterData,
+        );
         Toast.fire({ icon: "success", title: "Capítulo atualizado!" });
       } else {
         await addDoc(collection(storyRef, "chapters"), {
           ...chapterData,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
         });
 
         await updateDoc(storyRef, {
           chapterCount: increment(1),
-          lastUpdate: serverTimestamp()
+          totalWords: increment(wordCount),
+          lastUpdate: serverTimestamp(),
         });
 
         localStorage.removeItem(`draft_chapter_${storyId}`);
@@ -112,8 +136,7 @@ const CreateChapter: React.FC = () => {
       }
 
       navigate(`/story/${storyId}`);
-    } catch (e) {
-      console.error(e);
+    } catch {
       Toast.fire({ icon: "error", title: "Erro ao salvar capítulo." });
     } finally {
       setLoading(false);
@@ -121,15 +144,22 @@ const CreateChapter: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    const result = await ConfirmDialog("Excluir Capítulo?", "Esta ação é permanente.");
+    const result = await ConfirmDialog(
+      "Excluir Capítulo?",
+      "Esta ação é permanente.",
+    );
+
     if (!result.isConfirmed || !storyId || !chapterId) return;
 
     setLoading(true);
+
     try {
       await deleteDoc(doc(db, "stories", storyId, "chapters", chapterId));
+
       await updateDoc(doc(db, "stories", storyId), {
-        chapterCount: increment(-1)
+        chapterCount: increment(-1),
       });
+
       Toast.fire({ icon: "success", title: "Capítulo removido." });
       navigate(`/story/${storyId}`);
     } catch {
@@ -149,13 +179,25 @@ const CreateChapter: React.FC = () => {
 
           <div className="group-btns">
             {isEditing && (
-              <button className="btn-delete" onClick={handleDelete} disabled={loading}>
+              <button
+                className="btn-delete"
+                onClick={handleDelete}
+                disabled={loading}
+              >
                 Excluir
               </button>
             )}
 
-            <button className="btn-primary" onClick={handlePublish} disabled={loading}>
-              {loading ? "Processando..." : isEditing ? "Salvar Alterações" : "Publicar Capítulo"}
+            <button
+              className="btn-primary"
+              onClick={handlePublish}
+              disabled={loading}
+            >
+              {loading
+                ? "Processando..."
+                : isEditing
+                  ? "Salvar Alterações"
+                  : "Publicar Capítulo"}
             </button>
           </div>
         </header>
@@ -176,26 +218,27 @@ const CreateChapter: React.FC = () => {
 
           <div className="field">
             <label className="label-url">Link da Imagem de Capa</label>
-            <input 
+            <input
               className="url-input"
-              type="text" 
-              placeholder="Cole a URL da imagem aqui (Pinterest, Imgur...)"
+              type="text"
+              placeholder="Cole a URL da imagem aqui"
               value={chapterCover}
               onChange={(e) => setChapterCover(e.target.value)}
             />
 
             {chapterCover && (
               <div className="preview-container">
-                <img 
-                  src={chapterCover} 
-                  alt="Preview" 
-                  className="chapter-cover-preview" 
+                <img
+                  src={chapterCover}
+                  alt="Preview"
+                  className="chapter-cover-preview"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x200?text=Imagem+Invalida";
+                    (e.target as HTMLImageElement).src =
+                      "https://via.placeholder.com/400x200?text=Imagem+Invalida";
                   }}
                 />
-                <button 
-                  className="btn-remove-img" 
+                <button
+                  className="btn-remove-img"
                   onClick={() => setChapterCover("")}
                 >
                   Remover Link
@@ -211,7 +254,7 @@ const CreateChapter: React.FC = () => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Era uma vez..."
-              style={{ overflow: 'hidden' }}
+              style={{ overflow: "hidden" }}
             />
             <div className="word-count-badge">
               {content.trim().split(/\s+/).filter(Boolean).length} palavras
