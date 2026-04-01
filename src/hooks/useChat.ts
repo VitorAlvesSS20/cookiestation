@@ -38,6 +38,7 @@ export const useChat = (chatId: string) => {
     if (!chatId) {
       setMessages([]);
       setLoading(false);
+      setMessages([]);
       return;
     }
 
