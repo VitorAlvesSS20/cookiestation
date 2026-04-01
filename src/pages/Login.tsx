@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../services/firebase";
-import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
+import { auth } from "../services/firebase";
 import { Toast } from "../utils/swal"; 
 import "../styles/auth.css";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -20,24 +21,14 @@ const Login: React.FC = () => {
       const res = await signInWithEmailAndPassword(auth, email, password);
       const user = res.user;
 
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          uid: user.uid,
-          displayName: user.displayName || "Usuário",
-          email: user.email,
-          photoURL: user.photoURL || "",
-          online: true,
-          lastSeen: Date.now(),
-        });
-      } else {
-        await updateDoc(userRef, {
-          online: true,
-          lastSeen: Date.now(),
-        });
-      }
+      const token = await user.getIdToken();
+      await fetch(`${API_URL}/users/sync`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
       Toast.fire({
         icon: 'success',
@@ -109,11 +100,7 @@ const Login: React.FC = () => {
             </div>
 
             <button type="submit" className="auth-submit-btn" disabled={loading}>
-              {loading ? (
-                <span className="loader">Entrando...</span>
-              ) : (
-                "Entrar"
-              )}
+              {loading ? <span className="loader">Entrando...</span> : "Entrar"}
             </button>
           </form>
 

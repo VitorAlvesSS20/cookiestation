@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { db } from "../services/firebase";
-import { collection, query, orderBy, limit, onSnapshot, where } from "firebase/firestore";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGlobalAudio } from "../context/AudioContext"; 
+import { useGlobalAudio } from "../context/AudioContext";
+import { useAuth } from "../context/AuthContext";
 import "../styles/home.css";
 
 interface Story {
@@ -19,12 +18,15 @@ interface Story {
   visibility: string;
 }
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Home: React.FC = () => {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeGenre, setActiveGenre] = useState("Todos");
   const navigate = useNavigate();
   const { playSFX } = useGlobalAudio();
+  const { user } = useAuth();
 
   const genres = useMemo(() => ["Todos", "Fantasia", "Suspense", "Romance", "Terror", "Conto"], []);
 
@@ -33,51 +35,37 @@ const Home: React.FC = () => {
     navigate(`/story/${id}`);
   }, [navigate, playSFX]);
 
-  useEffect(() => {
+  const fetchStories = useCallback(async () => {
     setLoading(true);
-    const storiesRef = collection(db, "stories");
-    
-    let q;
-    if (activeGenre === "Todos") {
-      q = query(
-        storiesRef,
-        where("visibility", "==", "public"),
-        orderBy("createdAt", "desc"),
-        limit(12)
-      );
-    } else {
-      q = query(
-        storiesRef,
-        where("visibility", "==", "public"),
-        where("genre", "==", activeGenre),
-        orderBy("createdAt", "desc"),
-        limit(12)
-      );
-    }
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const data = querySnapshot.docs.map(doc => {
-        const docData = doc.data();
-        return {
-          id: doc.id,
-          ...docData,
-          wordCount: Number(docData.wordCount || 0),
-          views: Number(docData.views || 0),
-          authorName: docData.authorName || "Escritor Anônimo",
-          title: docData.title || "Sem Título",
-          genre: docData.genre || "Conto"
-        } as Story;
+    try {
+      const token = await user?.getIdToken();
+      const genreParam = activeGenre !== "Todos" ? `?genre=${activeGenre}` : "";
+      const response = await fetch(`${API_URL}/stories${genreParam}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      setStories(data);
-      setLoading(false);
-    }, (error) => {
+      if (response.ok) {
+        const data = await response.json();
+        const formattedData = data.map((story: any) => ({
+          ...story,
+          wordCount: Number(story.wordCount || 0),
+          views: Number(story.views || 0),
+          authorName: story.authorName || "Escritor Anônimo",
+          title: story.title || "Sem Título",
+          genre: story.genre || "Conto"
+        }));
+        setStories(formattedData);
+      }
+    } catch (error) {
       console.error("Erro na Estação de Dados:", error);
+    } finally {
       setLoading(false);
-    });
+    }
+  }, [activeGenre, user]);
 
-    return () => unsubscribe();
-  }, [activeGenre]);
+  useEffect(() => {
+    fetchStories();
+  }, [fetchStories]);
 
   return (
     <motion.div 
@@ -130,9 +118,7 @@ const Home: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="skeleton-card" />
-              ))}
+              {[...Array(6)].map((_, i) => <div key={i} className="skeleton-card" />)}
             </motion.div>
           ) : (
             <motion.div 
@@ -162,18 +148,13 @@ const Home: React.FC = () => {
                       />
                       <div className="card-badge">{story.genre}</div>
                     </div>
-                    
                     <div className="card-content">
                       <h3>{story.title}</h3>
-                      <p className="card-author-name">
-                        por <span>{story.authorName}</span>
-                      </p>
+                      <p className="card-author-name">por <span>{story.authorName}</span></p>
                       <div className="card-meta">
                         <span>{story.wordCount.toLocaleString('pt-BR')} palavras</span>
                         <span className="dot">•</span>
-                        <span className="card-stats">
-                            👁️ {story.views.toLocaleString('pt-BR')}
-                        </span>
+                        <span className="card-stats">👁️ {story.views.toLocaleString('pt-BR')}</span>
                       </div>
                     </div>
                   </motion.article>

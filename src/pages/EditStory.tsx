@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db } from "../services/firebase";
-import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import "../styles/storyDetail.css";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const EditStory: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,26 +16,28 @@ const EditStory: React.FC = () => {
   const [genre, setGenre] = useState("Geral");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [, setIsOwner] = useState(false);
 
   useEffect(() => {
     const fetchStory = async () => {
-      if (!id) return;
+      if (!id || !user) return;
       try {
-        const docRef = doc(db, "stories", id);
-        const snap = await getDoc(docRef);
+        const token = await user.getIdToken();
+        const response = await fetch(`${API_URL}/stories/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-        if (snap.exists()) {
-          const data = snap.data();
-          if (user?.uid !== data.userId) {
+        if (response.ok) {
+          const data = await response.json();
+          if (user.uid !== data.userId) {
             navigate("/");
             return;
           }
-          setIsOwner(true);
           setTitle(data.title || "");
-          setSynopsis(data.synopsis || data.sinopse || "");
+          setSynopsis(data.synopsis || "");
           setCoverUrl(data.coverUrl || "");
           setGenre(data.genre || "Geral");
+        } else {
+          navigate("/");
         }
       } catch (error) {
         console.error("Erro ao buscar história:", error);
@@ -47,30 +49,45 @@ const EditStory: React.FC = () => {
   }, [id, user, navigate]);
 
   const handleUpdate = async () => {
-    if (!id) return;
+    if (!id || !user) return;
     setLoading(true);
     try {
-      const docRef = doc(db, "stories", id);
-      await updateDoc(docRef, {
-        title,
-        synopsis,
-        coverUrl,
-        genre,
-        updatedAt: new Date()
+      const token = await user.getIdToken();
+      const response = await fetch(`${API_URL}/stories/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, synopsis, coverUrl, genre })
       });
-      navigate(`/story/${id}`);
+
+      if (response.ok) {
+        navigate(`/story/${id}`);
+      } else {
+        throw new Error();
+      }
     } catch (error) {
-      alert("Erro ao salvar alterações.");
+      alert("Erro ao salvar alterações no servidor.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!id || !window.confirm("Deseja mesmo apagar este livro e todos os seus capítulos? ☕")) return;
+    if (!id || !user || !window.confirm("Deseja mesmo apagar este livro e todos os seus capítulos? ☕")) return;
     try {
-      await deleteDoc(doc(db, "stories", id));
-      navigate("/");
+      const token = await user.getIdToken();
+      const response = await fetch(`${API_URL}/stories/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        navigate("/");
+      } else {
+        alert("Erro ao deletar a obra.");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -87,9 +104,7 @@ const EditStory: React.FC = () => {
     <div className="detail-page fade-in">
       <div className="detail-card edit-mode">
         <header className="detail-header">
-          <button className="back-btn" onClick={() => navigate(`/story/${id}`)}>
-            ← Voltar para a Obra
-          </button>
+          <button className="back-btn" onClick={() => navigate(`/story/${id}`)}>← Voltar para a Obra</button>
           <div className="header-info">
             <span className="author-badge">Editando sua Obra</span>
           </div>
@@ -137,9 +152,7 @@ const EditStory: React.FC = () => {
         </main>
 
         <footer className="detail-actions">
-          <button className="delete-btn" onClick={handleDelete}>
-            Deletar Livro
-          </button>
+          <button className="delete-btn" onClick={handleDelete}>Deletar Livro</button>
           <button className="save-btn" onClick={handleUpdate} disabled={loading}>
             {loading ? "Salvando..." : "Salvar Alterações"}
           </button>

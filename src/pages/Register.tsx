@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../services/firebase";
+import { auth } from "../services/firebase";
 import { Toast } from "../utils/swal"; 
 import "../styles/auth.css";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Register: React.FC = () => {
   const [name, setName] = useState("");
@@ -32,15 +33,16 @@ const Register: React.FC = () => {
 
       await updateProfile(user, { displayName: name });
 
-      await setDoc(doc(db, "users", user.uid), {
-        displayName: name,
-        email: email,
-        createdAt: serverTimestamp(),
-        photoURL: "",
-        bio: "",
-        location: "Brasil",
-        online: true
+      const token = await user.getIdToken();
+      const response = await fetch(`${API_URL}/users/sync`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
+
+      if (!response.ok) throw new Error("Erro ao sincronizar perfil com o servidor.");
       
       Toast.fire({
         icon: 'success',
@@ -50,17 +52,10 @@ const Register: React.FC = () => {
       navigate("/"); 
     } catch (err: any) {
       let message = "Erro ao preparar seu cadastro. Tente novamente.";
-      
-      if (err.code === 'auth/email-already-in-use') {
-        message = "Este e-mail já está cadastrado em nossa reserva.";
-      } else if (err.code === 'auth/weak-password') {
-        message = "Senha muito fraca. Tente uma combinação mais encorpada!";
-      }
+      if (err.code === 'auth/email-already-in-use') message = "Este e-mail já está cadastrado em nossa reserva.";
+      else if (err.code === 'auth/weak-password') message = "Senha muito fraca. Tente uma combinação mais encorpada!";
 
-      Toast.fire({
-        icon: 'error',
-        title: message
-      });
+      Toast.fire({ icon: 'error', title: message });
     } finally {
       setLoading(false);
     }
@@ -134,11 +129,7 @@ const Register: React.FC = () => {
             </div>
 
             <button type="submit" className="auth-submit-btn" disabled={loading}>
-              {loading ? (
-                <span className="loader">Preparando acesso...</span>
-              ) : (
-                "Cadastrar"
-              )}
+              {loading ? <span className="loader">Preparando acesso...</span> : "Cadastrar"}
             </button>
           </form>
 

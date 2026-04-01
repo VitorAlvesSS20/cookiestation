@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../services/firebase";
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, increment } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Toast } from "../utils/swal";
+import api from "../services/api";
 
 interface LikeProps {
   storyId: string;
@@ -15,55 +14,63 @@ const LikeButton: React.FC<LikeProps> = ({ storyId }) => {
 
   useEffect(() => {
     const fetchLikes = async () => {
-      const storyDoc = await getDoc(doc(db, "stories", storyId));
-      if (storyDoc.exists()) {
-        const data = storyDoc.data();
+      if (!storyId) return;
+      try {
+        const response = await api.get(`/stories/${storyId}`);
+        const data = response.data;
+        
         setLikeCount(data.likesCount || 0);
-        // Verifica se o UID do usuário está no array de likes
+        
         if (user) {
-          setLiked(data.likes?.includes(user.uid) || false);
+          setLiked(data.isLiked || false);
         }
+      } catch (err) {
+        console.error("Erro ao buscar likes:", err);
       }
     };
     fetchLikes();
   }, [storyId, user]);
 
   const toggleLike = async (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    if (!user) return Toast.fire({ icon: 'info', title: 'Faça login para curtir! ☕' });
+    
+    if (!user) {
+      return Toast.fire({ 
+        icon: 'info', 
+        title: 'Faça login para curtir! ☕' 
+      });
+    }
 
-    const storyRef = doc(db, "stories", storyId);
+    const previousLiked = liked;
+    const previousCount = likeCount;
 
     try {
-      if (!liked) {
-        // Otimismo na UI
-        setLiked(true);
-        setLikeCount(prev => prev + 1);
-
-        await updateDoc(storyRef, {
-          likes: arrayUnion(user.uid),
-          likesCount: increment(1)
-        });
-      } else {
-        // Otimismo na UI
-        setLiked(false);
-        setLikeCount(prev => Math.max(0, prev - 1));
-
-        await updateDoc(storyRef, {
-          likes: arrayRemove(user.uid),
-          likesCount: increment(-1)
-        });
-      }
-    } catch (err) {
-      console.error("Erro ao curtir:", err);
-      // Reverte se der erro (QA fallback)
       setLiked(!liked);
+      setLikeCount(prev => liked ? Math.max(0, prev - 1) : prev + 1);
+
+      await api.post(`/stories/${storyId}/like`, {});
+      
+    } catch (err) {
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
+      
+      console.error("Erro no toggleLike:", err);
+      Toast.fire({ 
+        icon: 'error', 
+        title: 'Erro ao processar curtida.' 
+      });
     }
   };
 
   return (
-    <button className={`btn-like ${liked ? 'active' : ''}`} onClick={toggleLike}>
-      {liked ? "❤️" : "🤍"} {likeCount}
+    <button 
+      className={`btn-like ${liked ? 'active' : ''}`} 
+      onClick={toggleLike}
+      type="button"
+    >
+      <span className="like-icon">{liked ? "❤️" : "🤍"}</span>
+      <span className="like-count">{likeCount}</span>
     </button>
   );
 };

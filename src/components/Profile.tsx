@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
-import { db } from "../services/firebase";
-import { 
-  doc, getDoc, setDoc, collection, query, 
-  where, getDocs, writeBatch 
-} from "firebase/firestore";
 import { deleteUser } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { Toast, ConfirmDialog } from "../utils/swal";
 import "../styles/profile.css";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -29,25 +26,30 @@ const Profile: React.FC = () => {
 
     try {
       setLoading(true);
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (userSnap.exists()) {
-        const data = userSnap.data();
+      const token = await user.getIdToken();
+
+      const userRes = await fetch(`${API_URL}/users/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (userRes.ok) {
+        const data = await userRes.json();
         setDisplayName(data.displayName || "");
         setBio(data.bio || "");
         setPhotoURL(data.photoURL || "");
         setLocation(data.location || "");
         setAuthorStatus(data.authorStatus || "");
         setWriterXP(data.writerXP || 0);
-      } else {
-        setDisplayName(user.displayName || "Escritor");
-        setPhotoURL(user.photoURL || "");
       }
 
-      const q = query(collection(db, "stories"), where("userId", "==", user.uid));
-      const snap = await getDocs(q);
-      setMyBooks(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      const booksRes = await fetch(`${API_URL}/stories/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (booksRes.ok) {
+        const booksData = await booksRes.json();
+        setMyBooks(booksData);
+      }
       
     } catch (e) {
       console.error("Erro ao carregar perfil:", e);
@@ -63,18 +65,28 @@ const Profile: React.FC = () => {
   const handleUpdateProfile = async () => {
     if (!user) return;
     try {
-      const userRef = doc(db, "users", user.uid);
-      await setDoc(userRef, { 
-        displayName, 
-        bio, 
-        photoURL, 
-        location, 
-        authorStatus, 
-        updatedAt: new Date() 
-      }, { merge: true });
+      const token = await user.getIdToken();
+      const response = await fetch(`${API_URL}/users/me`, {
+        method: 'PATCH',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ 
+          displayName, 
+          bio, 
+          photoURL, 
+          location, 
+          authorStatus 
+        })
+      });
 
-      setIsEditing(false);
-      Toast.fire({ icon: 'success', title: 'Perfil atualizado! ✍️' });
+      if (response.ok) {
+        setIsEditing(false);
+        Toast.fire({ icon: 'success', title: 'Perfil atualizado! ✍️' });
+      } else {
+        throw new Error();
+      }
     } catch (error) {
       Toast.fire({ icon: 'error', title: 'Erro ao salvar alterações.' });
     }
@@ -82,41 +94,45 @@ const Profile: React.FC = () => {
 
   const handleDeleteBook = async (bookId: string) => {
     const result = await ConfirmDialog("Apagar Obra?", "Isso excluirá todos os capítulos permanentemente.");
-    if (!result.isConfirmed) return;
+    if (!result.isConfirmed || !user) return;
 
     try {
-      const batch = writeBatch(db);
-      const capsSnap = await getDocs(collection(db, "stories", bookId, "chapters"));
-      capsSnap.forEach((cap) => batch.delete(cap.ref));
-      batch.delete(doc(db, "stories", bookId));
-      
-      await batch.commit();
-      setMyBooks(prev => prev.filter(b => b.id !== bookId));
-      Toast.fire({ icon: 'success', title: 'Obra removida.' });
+      const token = await user.getIdToken();
+      const response = await fetch(`${API_URL}/stories/${bookId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        setMyBooks(prev => prev.filter(b => b.id !== bookId));
+        Toast.fire({ icon: 'success', title: 'Obra removida.' });
+      }
     } catch (e) {
       Toast.fire({ icon: 'error', title: 'Erro ao deletar obra.' });
     }
   };
 
   const handleDeleteAccount = async () => {
-    const result = await ConfirmDialog("Ação Irreversível!", "Excluir sua conta apagará todas as suas histórias.");
+    const result = await ConfirmDialog("Ação Irreversível!", "Excluir sua conta apagará todas as suas histórias e perfil permanentemente.");
     if (!result.isConfirmed || !user) return;
 
     try {
-      const batch = writeBatch(db);
-      for (const book of myBooks) {
-        const caps = await getDocs(collection(db, "stories", book.id, "chapters"));
-        caps.forEach(c => batch.delete(c.ref));
-        batch.delete(doc(db, "stories", book.id));
-      }
-      batch.delete(doc(db, "users", user.uid));
+      const token = await user.getIdToken();
+      const userId = user.uid;
       
-      await batch.commit();
+      const response = await fetch(`${API_URL}/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) throw new Error("Erro ao limpar dados no servidor.");
+
       await deleteUser(user);
       navigate("/register");
+
     } catch (e: any) { 
       if (e.code === 'auth/requires-recent-login') {
-        Toast.fire({ icon: 'warning', title: 'Saia e entre novamente para confirmar a exclusão.' });
+        Toast.fire({ icon: 'warning', title: 'Sessão expirada. Saia e entre novamente para confirmar a exclusão.' });
       } else {
         Toast.fire({ icon: 'error', title: 'Erro ao excluir conta.' });
       }
@@ -131,7 +147,7 @@ const Profile: React.FC = () => {
         <div className="profile-main-info">
           <div 
             className="avatar-wrapper" 
-            style={{ backgroundImage: `url(${photoURL || 'https://ui-avatars.com/api/?name=' + displayName})` }} 
+            style={{ backgroundImage: `url(${photoURL || 'https://ui-avatars.com/api/?name=' + (displayName || 'User')})` }} 
           />
           
           {isEditing ? (

@@ -8,54 +8,49 @@ import {
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { auth } from "../services/firebase";
 
-/* ========================= */
-/* TYPES */
-/* ========================= */
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   logout: () => Promise<void>;
 }
 
-/* ========================= */
-/* CONTEXT */
-/* ========================= */
 const AuthContext = createContext<AuthContextType | null>(null);
 
-/* ========================= */
-/* PROVIDER */
-/* ========================= */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* ========================= */
-  /* LOGOUT */
-  /* ========================= */
   const logout = async () => {
     try {
       await signOut(auth);
+      localStorage.removeItem("token");
     } catch (error) {
-      console.error("Erro ao deslogar:", error);
+      console.error(error);
       throw error;
     }
   };
 
-  /* ========================= */
-  /* AUTH LISTENER */
-  /* ========================= */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      
+      if (currentUser) {
+        try {
+          const token = await currentUser.getIdToken();
+          localStorage.setItem("token", token);
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        localStorage.removeItem("token");
+      }
+      
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  /* ========================= */
-  /* PROVIDER */
-  /* ========================= */
   return (
     <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
@@ -63,9 +58,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/* ========================= */
-/* HOOK */
-/* ========================= */
 export const useAuth = () => {
   const context = useContext(AuthContext);
 

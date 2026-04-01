@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Corrigido: Importado para o botão de login
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { db } from "../services/firebase";
-import { 
-  collection, addDoc, query, orderBy, onSnapshot, 
-  serverTimestamp, Timestamp, doc, getDoc 
-} from "firebase/firestore";
 import { Toast } from "../utils/swal";
+import api from "../services/api";
 import "../styles/comments.css";
 
 interface Comment {
   id: string;
-  text: string;
+  content: string;
   userId: string;
   userName: string;
-  userAvatar: string;
-  createdAt: Timestamp;
+  userPhoto: string;
+  createdAt: any;
 }
 
 interface CommentsProps {
@@ -24,47 +20,25 @@ interface CommentsProps {
 
 const Comments: React.FC<CommentsProps> = ({ storyId }) => {
   const { user } = useAuth();
-  const navigate = useNavigate(); // Corrigido: Declarado o hook
+  const navigate = useNavigate();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
-  const [currentUserData, setCurrentUserData] = useState<{ photoURL?: string }>({});
 
-  useEffect(() => {
-    if (!user) return;
-    const fetchUserData = async () => {
-      try {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) setCurrentUserData(userSnap.data());
-      } catch (err) {
-        console.error("Erro ao carregar dados do usuário:", err);
-      }
-    };
-    fetchUserData();
-  }, [user]);
-
-  useEffect(() => {
+  const fetchComments = async () => {
     if (!storyId) return;
-
-    // Acessando a subcoleção dentro de stories
-    const commentsRef = collection(db, "stories", storyId, "comments");
-    const q = query(commentsRef, orderBy("createdAt", "desc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedComments = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Comment[];
-      
-      setComments(fetchedComments);
+    try {
+      const response = await api.get(`/comments/${storyId}`);
+      setComments(response.data);
+    } catch (err) {
+      console.error("Erro ao carregar comentários:", err);
+    } finally {
       setLoading(false);
-    }, (error) => {
-      console.error("Erro Firebase (Permissões):", error);
-      setLoading(false);
-    });
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    fetchComments();
   }, [storyId]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
@@ -76,18 +50,13 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
     if (!newComment.trim()) return;
 
     try {
-      const commentsRef = collection(db, "stories", storyId, "comments");
-      const finalAvatar = currentUserData.photoURL || user.photoURL || `https://api.dicebear.com/8.x/notionists/svg?seed=${user.uid}`;
-
-      await addDoc(commentsRef, {
-        text: newComment.trim(),
-        userId: user.uid,
-        userName: user.displayName || "Cozinheiro Anônimo",
-        userAvatar: finalAvatar,
-        createdAt: serverTimestamp(),
+      await api.post(`/comments/${storyId}`, {
+        content: newComment.trim(),
+        storyId: storyId
       });
 
       setNewComment("");
+      fetchComments();
       Toast.fire({ icon: 'success', title: 'Comentário enviado! 🍪', timer: 1500 });
     } catch (error) {
       console.error("Erro ao salvar comentário:", error);
@@ -95,7 +64,7 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
     }
   };
 
-  const formAvatar = currentUserData.photoURL || user?.photoURL || `https://api.dicebear.com/8.x/notionists/svg?seed=${user?.uid}`;
+  const formAvatar = user?.photoURL || `https://api.dicebear.com/8.x/notionists/svg?seed=${user?.uid}`;
 
   return (
     <div className="comments-section fade-in">
@@ -136,7 +105,7 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
           {comments.map((comment) => (
             <div key={comment.id} className="comment-item fade-in">
               <img 
-                src={comment.userAvatar} 
+                src={comment.userPhoto || `https://api.dicebear.com/8.x/notionists/svg?seed=${comment.userId}`} 
                 alt={comment.userName} 
                 className="comment-avatar" 
                 onError={(e) => (e.currentTarget.src = `https://api.dicebear.com/8.x/notionists/svg?seed=${comment.userId}`)}
@@ -145,10 +114,10 @@ const Comments: React.FC<CommentsProps> = ({ storyId }) => {
                 <div className="comment-header">
                   <span className="comment-author">{comment.userName}</span>
                   <span className="comment-date">
-                    {comment.createdAt?.toDate ? comment.createdAt.toDate().toLocaleDateString() : "agora"}
+                    {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : "agora"}
                   </span>
                 </div>
-                <p className="comment-text">{comment.text}</p>
+                <p className="comment-text">{comment.content}</p>
               </div>
             </div>
           ))}

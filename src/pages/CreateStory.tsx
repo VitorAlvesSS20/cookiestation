@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { db } from "../services/firebase";
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Toast } from "../utils/swal";
 import { isContentAllowed } from "../services/moderation";
 import "../styles/createStory.css";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const CreateStory: React.FC = () => {
   const { user } = useAuth();
@@ -39,7 +39,6 @@ const CreateStory: React.FC = () => {
         );
       }
     }, 1500);
-
     return () => clearTimeout(timer);
   }, [title, genre, synopsis, coverUrl, visibility]);
 
@@ -62,27 +61,25 @@ const CreateStory: React.FC = () => {
     setLoading(true);
 
     try {
+      const token = await user.getIdToken();
       const storyData = {
         title: title.trim(),
         synopsis: synopsis.trim(),
         genre,
         visibility,
-        userId: user.uid,
-        authorName: user.displayName || "Escritor Anônimo",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
         coverUrl: coverUrl.trim() || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
-        chapterCount: 0,
-        status: "writing",
-        likes: [],
-        likesCount: 0,
       };
 
-      await addDoc(collection(db, "stories"), storyData);
-
-      await updateDoc(doc(db, "users", user.uid), {
-        lastPostAt: serverTimestamp(),
+      const response = await fetch(`${API_URL}/stories/`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(storyData)
       });
+
+      if (!response.ok) throw new Error("Falha ao salvar história no servidor.");
 
       localStorage.removeItem("cookie_book_base");
 
@@ -105,10 +102,7 @@ const CreateStory: React.FC = () => {
     <div className="create-page-wrapper fade-in">
       <div className="create-container-refined">
         <header className="create-actions-top">
-          <button className="btn-exit" onClick={() => navigate(-1)}>
-            ← Voltar
-          </button>
-
+          <button className="btn-exit" onClick={() => navigate(-1)}>← Voltar</button>
           <div className="group-btns">
             <button
               className="btn-primary"

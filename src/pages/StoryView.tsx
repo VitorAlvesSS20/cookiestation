@@ -1,26 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { db } from "../services/firebase";
-import { 
-  doc, 
-  getDoc, 
-  collection, 
-  getDocs, 
-  orderBy, 
-  query, 
-  setDoc, 
-  serverTimestamp 
-} from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import LikeButton from "../components/LikeButton";
 import Comments from "../components/Comments";
+import api from "../services/api";
 import "../styles/storyView.css";
 
 const StoryView: React.FC = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [story, setStory] = useState<any>(null);
   const [chapters, setChapters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,24 +19,23 @@ const StoryView: React.FC = () => {
     const fetchStoryData = async () => {
       if (!id) return;
       try {
-        const storyDoc = await getDoc(doc(db, "stories", id));
-        if (storyDoc.exists()) {
-          const data = storyDoc.data();
-          setStory({
-            id: storyDoc.id,
-            userId: data.userId,
-            title: data.title || "Sem título",
-            synopsis: data.synopsis || data.description || data.sinopse || "Nenhuma sinopse disponível.",
-            coverUrl: data.coverUrl || "",
-            genre: data.genre || "Geral"
-          });
-        }
+        setLoading(true);
+        const [storyRes, chaptersRes] = await Promise.all([
+          api.get(`/stories/${id}`),
+          api.get(`/stories/${id}/chapters`)
+        ]);
 
-        const capsRef = collection(db, "stories", id, "chapters");
-        const q = query(capsRef, orderBy("createdAt", "asc"));
-        const capsSnap = await getDocs(q);
-        
-        setChapters(capsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        const storyData = storyRes.data;
+        setStory({
+          id: storyData.id,
+          userId: storyData.userId,
+          title: storyData.title || "Sem título",
+          synopsis: storyData.synopsis || "Nenhuma sinopse disponível.",
+          coverUrl: storyData.coverUrl || "",
+          genre: storyData.genre || "Geral"
+        });
+
+        setChapters(Array.isArray(chaptersRes.data) ? chaptersRes.data : []);
       } catch (e) {
         console.error("Erro ao carregar obra:", e);
       } finally {
@@ -58,19 +47,11 @@ const StoryView: React.FC = () => {
   }, [id]);
 
   const handleContactAuthor = async () => {
-    if (!user || !story) return;
-    if (user.uid === story.userId) return;
-
-    const combinedId = [user.uid, story.userId].sort().join("_");
-
+    if (!user || !story || user.uid === story.userId) return;
     try {
-      const chatRef = doc(db, "chats", combinedId);
-      await setDoc(chatRef, {
-        participants: [user.uid, story.userId],
-        lastUpdate: serverTimestamp(),
-        active: true
-      }, { merge: true });
-
+      await api.post(`/chats/init`, {
+        targetUserId: story.userId
+      });
       navigate(`/messages`);
     } catch (error) {
       console.error("Erro ao iniciar chat:", error);
@@ -88,6 +69,7 @@ const StoryView: React.FC = () => {
     <div className="error-container">
       <h1>404</h1>
       <p>Obra não encontrada.</p>
+      <button onClick={() => navigate('/')}>Voltar ao Início</button>
     </div>
   );
 

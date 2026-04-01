@@ -19,7 +19,6 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined);
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentTrack, setCurrentTrack] = useState(AMBIENCE_TRACKS.TRACK_1);
   const [isAmbiencePlaying, setIsAmbiencePlaying] = useState(false);
-
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -31,6 +30,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => {
       audio.pause();
       audio.src = "";
+      audioRef.current = null;
     };
   }, []);
 
@@ -38,19 +38,22 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const audio = audioRef.current;
     if (!audio) return;
 
-    audio.pause();
-    audio.currentTime = 0;
+    const playAudio = async () => {
+      try {
+        audio.pause();
+        audio.src = `${currentTrack}?v=${Date.now()}`;
+        audio.load();
+        
+        if (isAmbiencePlaying) {
+          await audio.play();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-    audio.removeAttribute("src");
-    audio.load();
-
-    audio.src = currentTrack + "?v=" + Date.now();
-    audio.load();
-
-    if (isAmbiencePlaying) {
-      audio.play().catch(() => {});
-    }
-  }, [currentTrack, isAmbiencePlaying]);
+    playAudio();
+  }, [currentTrack]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -66,11 +69,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const unlock = () => {
       const audio = audioRef.current;
-      if (!audio) return;
-
-      if (isAmbiencePlaying && audio.paused) {
-        audio.play().catch(() => {});
-      }
+      if (!audio || !isAmbiencePlaying || !audio.paused) return;
+      audio.play().catch(() => {});
     };
 
     window.addEventListener('click', unlock);
@@ -82,12 +82,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const changeTrack = (url: string) => {
+    if (currentTrack === url) return;
     setCurrentTrack(url);
     setIsAmbiencePlaying(true);
   };
 
   const playSFX = (url: string) => {
-    const sfx = new Audio(url + "?v=" + Date.now());
+    const sfx = new Audio(`${url}?v=${Date.now()}`);
     sfx.volume = 0.4;
     sfx.play().catch(() => {});
   };
