@@ -2,7 +2,7 @@
   background-color: #fdfbf7;
   min-height: 100vh;
   width: 100%;
-  padding: clamp(0px, 3vw, 20px);
+  padding: 20px;
   display: block;
   overflow-y: auto;
   overflow-x: hidden;
@@ -11,10 +11,10 @@
 
 .create-container-refined {
   max-width: 850px;
-  margin: 0 auto clamp(20px, 5vw, 60px);
+  margin: 0 auto 60px;
   background: #ffffff;
   padding: clamp(20px, 5vw, 50px);
-  border-radius: clamp(0px, 4vw, 30px);
+  border-radius: 30px;
   border: 1.5px solid #f3eeeb;
   box-shadow: 0 20px 50px rgba(60, 42, 33, 0.05);
   position: relative;
@@ -25,13 +25,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  gap: 10px;
+  gap: 15px;
   padding-bottom: 20px;
   border-bottom: 1px solid #f3eeeb;
   position: sticky;
-  top: -1px;
+  top: 0;
   background: #ffffff;
   z-index: 10;
+  flex-wrap: wrap;
 }
 
 .btn-exit {
@@ -42,6 +43,7 @@
   cursor: pointer;
   transition: 0.2s;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .btn-exit:hover {
@@ -50,7 +52,7 @@
 
 .group-btns {
   display: flex;
-  gap: clamp(8px, 2vw, 12px);
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -72,6 +74,7 @@
   font-weight: 800;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
 }
 
 .btn-primary:hover {
@@ -89,6 +92,7 @@
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-secondary:hover {
@@ -105,6 +109,7 @@
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-delete:hover {
@@ -115,14 +120,13 @@
 .main-title-input {
   width: 100%;
   border: none;
-  font-size: clamp(1.6rem, 6vw, 2.8rem);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
   font-weight: 900;
   color: #1a120b;
   margin-bottom: 20px;
   outline: none;
   background: transparent;
   font-family: "Playfair Display", serif;
-  line-height: 1.2;
 }
 
 .label-url {
@@ -165,7 +169,7 @@ select.url-input {
 
 .metadata-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-top: 10px;
 }
@@ -210,11 +214,11 @@ select.url-input {
   width: 100%;
   border: 1.5px solid #f3eeeb;
   border-radius: 18px;
-  padding: clamp(15px, 4vw, 25px);
-  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  padding: 25px;
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
   line-height: 1.8;
   font-family: "Georgia", serif;
-  min-height: clamp(250px, 50vh, 500px);
+  min-height: 300px;
   margin-top: 25px;
   outline: none;
   transition: border-color 0.3s;
@@ -245,16 +249,15 @@ select.url-input {
 }
 
 .genre-select-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 10px;
 }
 
 .genre-chip {
-  padding: 10px;
-  text-align: center;
-  border-radius: 12px;
+  padding: 8px 16px;
+  border-radius: 50px;
   border: 1.5px solid #f3eeeb;
   background: #fafafa;
   color: #8b7e74;
@@ -485,56 +488,64 @@ select.url-input {
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .create-page-wrapper {
     padding: 0;
   }
 
   .create-container-refined {
     border-radius: 0;
-    border-left: none;
-    border-right: none;
-    padding: 15px;
+    border: none;
+    padding: 20px;
+    margin-bottom: 0;
   }
 
   .create-actions-top {
-    flex-wrap: wrap;
-    padding: 10px 0;
-  }
-
-  .btn-exit {
-    order: 1;
-    width: auto;
+    padding: 15px 10px;
+    margin-bottom: 20px;
+    justify-content: space-between;
+    gap: 10px;
   }
 
   .group-btns {
-    order: 3;
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    gap: 8px;
   }
 
-  .group-btns button {
+  .metadata-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .btn-primary, .btn-secondary, .btn-delete {
+    padding: 10px 15px;
+    font-size: 0.8rem;
     flex: 1;
-    padding: 12px 5px;
-    font-size: 0.75rem;
-    white-space: nowrap;
+    text-align: center;
   }
 
   .autosave-text {
-    order: 2;
-    margin-left: auto;
-    font-size: 0.65rem;
+    display: none;
   }
 
-  .preview-container {
-    margin: 10px 0;
+  .main-content-input {
+    min-height: 250px;
+    padding: 15px;
   }
 
-  .chapter-cover-preview {
-    max-height: 250px;
+  .main-title-input {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .create-actions-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .genre-select-container {
-    grid-template-columns: repeat(2, 1fr);
+  .group-btns {
+    width: 100%;
+    justify-content: space-between;
   }
 }

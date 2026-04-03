@@ -2,10 +2,10 @@
   --chat-bg: #140d09;
   --sidebar-bg: #2D1E17;
   --layout-bg: #1e1611;
-  --border-color: rgba(212, 163, 115, 0.1);
+  --border-color: rgba(212, 163, 115, 0.2);
   --cookie-gold: #D4A373;
   --text-primary: #ffffff;
-  --text-secondary: #8d7b70;
+  --text-secondary: #a8968a;
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -19,7 +19,7 @@
   background: var(--layout-bg);
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
   border: 1px solid var(--border-color);
   position: relative;
 }
@@ -36,7 +36,7 @@
 
 .inbox-header {
   padding: 25px 20px;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.3);
   flex-shrink: 0;
 }
 
@@ -45,13 +45,14 @@
   margin-bottom: 15px;
   font-size: 1.4rem;
   font-family: 'Playfair Display', serif;
+  font-weight: 700;
 }
 
 .inbox-list {
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-color) transparent;
+  scrollbar-color: var(--cookie-gold) transparent;
 }
 
 .inbox-list::-webkit-scrollbar {
@@ -59,7 +60,7 @@
 }
 
 .inbox-list::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--cookie-gold);
   border-radius: 10px;
 }
 
@@ -69,18 +70,18 @@
   padding: 15px 20px;
   gap: 15px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
   transition: background 0.2s ease;
   position: relative;
 }
 
 .inbox-item:hover {
-  background: rgba(212, 163, 115, 0.05);
+  background: rgba(212, 163, 115, 0.08);
 }
 
 .inbox-item.active {
-  background: rgba(212, 163, 115, 0.12);
-  border-left: 3px solid var(--cookie-gold);
+  background: rgba(212, 163, 115, 0.15);
+  border-left: 4px solid var(--cookie-gold);
 }
 
 .inbox-avatar {
@@ -90,7 +91,7 @@
   border: 2px solid var(--cookie-gold);
   overflow: hidden;
   flex-shrink: 0;
-  background: var(--layout-bg);
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,7 +121,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .btn-delete-small {
@@ -143,7 +144,7 @@
 }
 
 .btn-delete-small:hover {
-  color: #ff4d4d;
+  color: #ff6b6b;
 }
 
 .chat-container {
@@ -163,8 +164,8 @@
 
 .chat-header {
   padding: 15px 25px;
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(15px);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -182,7 +183,7 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  border: 1.5px solid var(--cookie-gold);
+  border: 2px solid var(--cookie-gold);
   object-fit: cover;
 }
 
@@ -190,7 +191,7 @@
   color: var(--text-primary);
   font-size: 1.1rem;
   margin: 0;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .no-chat-selected {
@@ -207,7 +208,8 @@
 .no-chat-selected .coffee-icon {
   font-size: 4rem;
   margin-bottom: 20px;
-  filter: drop-shadow(0 0 10px rgba(212, 163, 115, 0.2));
+  color: var(--cookie-gold);
+  filter: drop-shadow(0 0 15px rgba(212, 163, 115, 0.3));
 }
 
 .mobile-back-button {
@@ -217,7 +219,7 @@
 @media (max-width: 900px) {
   .messages-layout {
     display: block;
-    height: calc(100vh - 70px);
+    height: 100vh;
     border-radius: 0;
     border: none;
     max-width: 100%;
@@ -260,11 +262,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    background: rgba(212, 163, 115, 0.1);
+    width: 40px;
+    height: 40px;
+    background: rgba(212, 163, 115, 0.15);
     color: var(--cookie-gold);
-    border: none;
+    border: 1px solid var(--cookie-gold);
     border-radius: 12px;
     font-size: 1.2rem;
     cursor: pointer;
@@ -272,6 +274,7 @@
 
   .chat-header {
     padding: 12px 15px;
+    background: var(--sidebar-bg);
   }
 
   .inbox-item {
