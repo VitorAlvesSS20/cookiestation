@@ -138,7 +138,7 @@
   font-weight: 900;
   margin-bottom: 10px;
   line-height: 1.1;
-  font-family: 'Playfair Display', serif;
+  color: var(--cookie-gold);
 }
 
 .author-name-display {

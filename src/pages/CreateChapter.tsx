@@ -169,18 +169,29 @@ const CreateChapter: React.FC = () => {
     }
   };
 
+  const currentWordCount = content.trim().split(/\s+/).filter(Boolean).length;
+
   return (
     <div className="create-page-wrapper fade-in">
       <div className="create-container-refined">
         <header className="create-actions-top">
           <button className="btn-exit" onClick={() => navigate(-1)}>
-            ← Cancelar
+            ← Voltar
           </button>
 
           <div className="group-btns">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => window.print()}
+              disabled={!content}
+            >
+              <span></span> Imprimir planejamento
+            </button>
+
             {isEditing && (
               <button
-                className="btn-delete"
+                className="btn-delete-simple"
                 onClick={handleDelete}
                 disabled={loading}
               >
@@ -256,11 +267,52 @@ const CreateChapter: React.FC = () => {
               placeholder="Era uma vez..."
               style={{ overflow: "hidden" }}
             />
-            <div className="word-count-badge">
-              {content.trim().split(/\s+/).filter(Boolean).length} palavras
-            </div>
+            <div className="word-count-badge">{currentWordCount} palavras</div>
           </div>
         </main>
+      </div>
+
+      {/* SEÇÃO DE IMPRESSÃO DO CAPÍTULO */}
+      <div className="print-only-section">
+        <div className="print-cover">
+          {chapterCover && (
+            <img
+              src={chapterCover}
+              className="print-img"
+              alt="Capa do Capítulo"
+            />
+          )}
+          <h1 className="print-title" style={{ fontSize: "42pt" }}>
+            {chapterTitle || "Capítulo Sem Título"}
+          </h1>
+          <p className="print-author">{user?.displayName || "Autor"}</p>
+        </div>
+
+        <div className="print-content">
+          <div className="print-header-meta">
+            <div data-label="Tipo de Documento">
+              <span>Manuscrito de Capítulo</span>
+            </div>
+            <div data-label="Extensão">
+              <span>{currentWordCount} palavras</span>
+            </div>
+            <div data-label="Data de Revisão">
+              <span>{new Date().toLocaleDateString()}</span>
+            </div>
+          </div>
+
+          <div className="print-synopsis">
+            <h2>Capítulo</h2>
+            <p style={{ fontStyle: "normal", whiteSpace: "pre-wrap" }}>
+              {content || "Nenhum conteúdo escrito."}
+            </p>
+          </div>
+
+          <div className="print-footer-info">
+            <span>CookieStation - Plataforma Literária</span>
+            <span>Página 1</span>
+          </div>
+        </div>
       </div>
     </div>
   );

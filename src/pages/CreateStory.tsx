@@ -215,6 +215,18 @@ const CreateStory: React.FC = () => {
             >
               Publicar
             </button>
+
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                setIsDraft(true);
+                window.print();
+              }}
+              disabled={!title}
+            >
+              <span></span> Imprimir Planejamento
+            </button>
           </div>
         </header>
 
@@ -319,6 +331,40 @@ const CreateStory: React.FC = () => {
             placeholder="Escreva uma sinopse cativante..."
           />
         </main>
+      </div>
+
+      <div className="print-only-section">
+        <div className="print-cover">
+          {coverUrl && <img src={coverUrl} className="print-img" alt="Capa" />}
+          <h1 className="print-title">{title || "Título Provisório"}</h1>
+          <p className="print-author">{user?.displayName || "Autor"}</p>
+        </div>
+
+        <div className="print-content">
+          <div className="print-header-meta">
+            <div data-label="Gêneros Literários">
+              <span>{genres.join(" / ")}</span>
+            </div>
+            <div data-label="Classificação">
+              <span>{rating}</span>
+            </div>
+            <div data-label="Status da Obra">
+              <span>{status}</span>
+            </div>
+          </div>
+
+          <div className="print-synopsis">
+            <h2>Sinopse da Obra</h2>
+            <p>
+              {synopsis || "O autor ainda não definiu a sinopse deste projeto."}
+            </p>
+          </div>
+
+          <div className="print-footer-info">
+            <span>Tags: {tags || "Nenhuma"}</span>
+            <span>Documento gerado em {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
