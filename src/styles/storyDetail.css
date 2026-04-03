@@ -10,6 +10,8 @@
   --radius-md: 12px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font-main: 'Poppins', system-ui, sans-serif;
+  --border-subtle: #eee6e2;
+  --input-bg: #faf8f6;
 }
 
 .detail-page, .create-page-wrapper {
@@ -29,7 +31,7 @@
   background: var(--paper-white);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  border: 1px solid #eee6e2;
+  border: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   margin-bottom: 40px; 
@@ -44,10 +46,9 @@
 
 .detail-header, .create-actions-top {
   padding: 20px 40px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--paper-white);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid #f3eeeb;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -113,9 +114,9 @@
 .url-input {
   width: 100%;
   padding: 16px;
-  border: 1.5px solid #eee6e2;
+  border: 1.5px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: #faf8f6;
+  background: var(--input-bg);
   font-family: var(--font-main);
   font-size: 1rem;
   color: var(--mocha-dark);
@@ -149,8 +150,8 @@ select.url-input {
 .genre-chip {
   padding: 10px 20px;
   border-radius: 50px;
-  border: 1.5px solid #eee6e2;
-  background: #faf8f6;
+  border: 1.5px solid var(--border-subtle);
+  background: var(--input-bg);
   color: var(--text-muted);
   font-weight: 700;
   font-size: 0.85rem;
@@ -166,7 +167,7 @@ select.url-input {
 
 .genre-chip.active {
   background: var(--mocha-dark);
-  color: white;
+  color: var(--paper-white);
   border-color: var(--mocha-dark);
 }
 
@@ -192,7 +193,7 @@ select.url-input {
   width: 100%;
   border-radius: 18px;
   overflow: hidden;
-  border: 1.5px solid #eee6e2;
+  border: 1.5px solid var(--border-subtle);
 }
 
 .chapter-cover-preview {
@@ -206,8 +207,8 @@ select.url-input {
   position: absolute;
   top: 15px;
   right: 15px;
-  background: rgba(26, 18, 11, 0.8);
-  color: white;
+  background: var(--mocha-dark);
+  color: var(--paper-white);
   border: none;
   padding: 8px 16px;
   border-radius: 50px;
@@ -232,8 +233,8 @@ select.url-input {
 
 .detail-actions {
   padding: 30px 40px;
-  background: #fdfcfb;
-  border-top: 1px solid #f3eeeb;
+  background: var(--latte-cream);
+  border-top: 1px solid var(--border-subtle);
   justify-content: flex-end;
 }
 
@@ -251,16 +252,17 @@ select.url-input {
 
 .save-btn:hover:not(:disabled), .btn-primary:hover:not(:disabled) {
   background: var(--cookie-gold);
+  color: var(--mocha-dark);
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(212, 163, 115, 0.3);
 }
 
 .btn-secondary {
-  background: white;
+  background: var(--paper-white);
   color: var(--mocha-dark);
   padding: 14px 24px;
   border-radius: 50px;
-  border: 1.5px solid #eee6e2;
+  border: 1.5px solid var(--border-subtle);
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
@@ -279,7 +281,7 @@ select.url-input {
 
 .delete-btn:hover, .btn-delete-simple:hover {
   background: var(--error);
-  color: white;
+  color: var(--paper-white);
 }
 
 .autosave-text {
