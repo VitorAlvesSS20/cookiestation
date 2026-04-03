@@ -37,32 +37,61 @@ const CreateStory: React.FC = () => {
   const [synopsis, setSynopsis] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
   const [visibility, setVisibility] = useState("public");
+  const [status, setStatus] = useState("Em andamento");
+  const [rating, setRating] = useState("Livre");
+  const [tags, setTags] = useState("");
+  const [isDraft, setIsDraft] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("cookie_book_base");
     if (saved) {
       const data = JSON.parse(saved);
       setTitle(data.title ?? "");
-      setGenres(data.genres ?? (data.genre ? [data.genre] : ["Conto"]));
+      setGenres(data.genres ?? ["Conto"]);
       setSynopsis(data.synopsis ?? "");
       setCoverUrl(data.coverUrl ?? "");
       setVisibility(data.visibility ?? "public");
+      setStatus(data.status ?? "Em andamento");
+      setRating(data.rating ?? "Livre");
+      setTags(data.tags ?? "");
+      setIsDraft(data.isDraft ?? false);
     }
   }, []);
 
   useEffect(() => {
+    setAutoSaveStatus("Salvando...");
     const timer = setTimeout(() => {
-      if (title.trim() || synopsis.trim()) {
-        localStorage.setItem(
-          "cookie_book_base",
-          JSON.stringify({ title, genres, synopsis, coverUrl, visibility }),
-        );
-      }
-    }, 1500);
+      localStorage.setItem(
+        "cookie_book_base",
+        JSON.stringify({
+          title,
+          genres,
+          synopsis,
+          coverUrl,
+          visibility,
+          status,
+          rating,
+          tags,
+          isDraft,
+        }),
+      );
+      setAutoSaveStatus("Salvo automaticamente");
+    }, 1200);
 
     return () => clearTimeout(timer);
-  }, [title, genres, synopsis, coverUrl, visibility]);
+  }, [
+    title,
+    genres,
+    synopsis,
+    coverUrl,
+    visibility,
+    status,
+    rating,
+    tags,
+    isDraft,
+  ]);
 
   const toggleGenre = (g: string) => {
     if (genres.includes(g)) {
@@ -74,21 +103,30 @@ const CreateStory: React.FC = () => {
     }
   };
 
+  const generateSlug = (text: string) =>
+    text
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-");
+
   const handleCreateBook = async () => {
     if (!user) {
-      Toast.fire({ icon: "error", title: "Sessão expirada. Entre novamente." });
+      Toast.fire({ icon: "error", title: "Sessão expirada." });
       return;
     }
 
-    if (!title.trim() || !synopsis.trim()) {
-      Toast.fire({
-        icon: "warning",
-        title: "Dê um nome e uma sinopse à sua obra!",
-      });
+    if (title.trim().length < 3 || title.length > 80) {
+      Toast.fire({ icon: "warning", title: "Título inválido." });
       return;
     }
 
-    if (!isContentAllowed(title + " " + synopsis)) {
+    if (synopsis.trim().length < 20 || synopsis.length > 500) {
+      Toast.fire({ icon: "warning", title: "Sinopse inválida." });
+      return;
+    }
+
+    if (!isContentAllowed(title + synopsis)) {
       Toast.fire({ icon: "error", title: "Conteúdo não permitido." });
       return;
     }
@@ -96,11 +134,23 @@ const CreateStory: React.FC = () => {
     setLoading(true);
 
     try {
+      const slug = generateSlug(title);
+      const tagsArray = tags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
       const storyData = {
         title: title.trim(),
         synopsis: synopsis.trim(),
         genres,
+        tags: tagsArray,
+        rating,
+        status,
         visibility,
+        isDraft,
+        slug,
+        searchKeywords: [...tagsArray, ...genres, title.toLowerCase()],
         userId: user.uid,
         authorName: user.displayName ?? "Escritor Anônimo",
         createdAt: serverTimestamp(),
@@ -109,7 +159,6 @@ const CreateStory: React.FC = () => {
           coverUrl.trim() ||
           "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c",
         chapterCount: 0,
-        status: "writing",
         likes: [],
         likesCount: 0,
         views: 0,
@@ -125,8 +174,7 @@ const CreateStory: React.FC = () => {
 
       Toast.fire({
         icon: "success",
-        title: "Obra registrada com sucesso!",
-        text: "Sua história já está na estante.",
+        title: isDraft ? "Rascunho salvo!" : "Obra publicada!",
       });
 
       navigate("/profile");
@@ -146,98 +194,177 @@ const CreateStory: React.FC = () => {
           </button>
 
           <div className="group-btns">
+            <span className="autosave-text">{autoSaveStatus}</span>
             <button
-              className="btn-primary"
-              onClick={handleCreateBook}
+              className="btn-secondary"
+              onClick={() => {
+                setIsDraft(true);
+                handleCreateBook();
+              }}
               disabled={loading}
             >
-              {loading ? "Preparando..." : "Publicar Obra"}
+              Rascunho
+            </button>
+            <button
+              className="btn-primary"
+              onClick={() => {
+                setIsDraft(false);
+                handleCreateBook();
+              }}
+              disabled={loading}
+            >
+              Publicar
+            </button>
+
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                setIsDraft(true);
+                window.print();
+              }}
+              disabled={!title}
+            >
+              <span></span> Imprimir Planejamento
             </button>
           </div>
         </header>
 
         <main className="create-main-form">
-          <h1 className="form-step-title">Novo Livro</h1>
+          <input
+            className="main-title-input"
+            placeholder="Título da sua história..."
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
-          <div className="field">
-            <input
-              className="main-title-input"
-              placeholder="Título..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+          <div className="genre-select-container">
+            {GENRES.map((g) => {
+              const isActive = genres.includes(g);
+              const isLimitReached = genres.length >= 5 && !isActive;
+
+              return (
+                <div
+                  key={g}
+                  className={`genre-chip ${isActive ? "active" : ""} ${
+                    isLimitReached ? "disabled" : ""
+                  }`}
+                  onClick={() => {
+                    if (!isLimitReached) toggleGenre(g);
+                  }}
+                >
+                  {g}
+                </div>
+              );
+            })}
+          </div>
+          <div className="genre-limit">
+            Gêneros selecionados: {genres.length}/5
           </div>
 
-          <div
-            className="metadata-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "20px",
-              marginBottom: "20px",
-            }}
-          >
-            <div className="field">
-              <label className="label-url">Gênero</label>
-              <div className="genre-select-container">
-                {GENRES.map((g) => {
-                  const isActive = genres.includes(g);
-                  const isLimitReached = genres.length >= 5 && !isActive;
-
-                  return (
-                    <div
-                      key={g}
-                      className={`genre-chip ${isActive ? "active" : ""} ${
-                        isLimitReached ? "disabled" : ""
-                      }`}
-                      onClick={() => {
-                        if (!isLimitReached) toggleGenre(g);
-                      }}
-                    >
-                      {g}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="genre-limit">{genres.length}/5 selecionados</div>
-            </div>
-
-            <div className="field">
-              <label className="label-url">Privacidade</label>
+          <div className="metadata-grid">
+            <div className="input-group">
+              <label className="label-url">Status</label>
               <select
                 className="url-input"
-                value={visibility}
-                onChange={(e) => setVisibility(e.target.value)}
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="public">Pública</option>
-                <option value="private">Privada</option>
+                <option>Em andamento</option>
+                <option>Concluída</option>
+                <option>Hiato</option>
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label className="label-url">Classificação</label>
+              <select
+                className="url-input"
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+              >
+                <option>Livre</option>
+                <option>10+</option>
+                <option>12+</option>
+                <option>14+</option>
+                <option>16+</option>
+                <option>18+</option>
               </select>
             </div>
           </div>
 
-          <div className="field">
-            <label className="label-url">Link da Capa</label>
-            <input
-              className="url-input"
-              type="text"
-              value={coverUrl}
-              onChange={(e) => setCoverUrl(e.target.value)}
-              placeholder="URL da imagem"
-            />
+          <label className="label-url">Tags e Identidade</label>
+          <input
+            className="url-input"
+            placeholder="Tags (ação, romance, etc) separadas por vírgula"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+          />
+
+          <input
+            className="url-input"
+            placeholder="Link da imagem de capa (URL)"
+            value={coverUrl}
+            onChange={(e) => setCoverUrl(e.target.value)}
+          />
+
+          {coverUrl && (
+            <div className="preview-container">
+              <img
+                src={coverUrl}
+                alt="preview"
+                className="chapter-cover-preview"
+              />
+              <button
+                className="btn-remove-img"
+                onClick={() => setCoverUrl("")}
+              >
+                Remover Capa
+              </button>
+            </div>
+          )}
+
+          <textarea
+            className="main-content-input"
+            value={synopsis}
+            onChange={(e) => setSynopsis(e.target.value)}
+            placeholder="Escreva uma sinopse cativante..."
+          />
+        </main>
+      </div>
+
+      <div className="print-only-section">
+        <div className="print-cover">
+          {coverUrl && <img src={coverUrl} className="print-img" alt="Capa" />}
+          <h1 className="print-title">{title || "Título Provisório"}</h1>
+          <p className="print-author">{user?.displayName || "Autor"}</p>
+        </div>
+
+        <div className="print-content">
+          <div className="print-header-meta">
+            <div data-label="Gêneros Literários">
+              <span>{genres.join(" / ")}</span>
+            </div>
+            <div data-label="Classificação">
+              <span>{rating}</span>
+            </div>
+            <div data-label="Status da Obra">
+              <span>{status}</span>
+            </div>
           </div>
 
-          <div className="field">
-            <label className="label-url">Sinopse</label>
-            <textarea
-              className="main-content-input"
-              style={{ minHeight: "200px" }}
-              value={synopsis}
-              onChange={(e) => setSynopsis(e.target.value)}
-              placeholder="Sobre o que é sua história?"
-            />
+          <div className="print-synopsis">
+            <h2>Sinopse da Obra</h2>
+            <p>
+              {synopsis || "O autor ainda não definiu a sinopse deste projeto."}
+            </p>
           </div>
-        </main>
+
+          <div className="print-footer-info">
+            <span>Tags: {tags || "Nenhuma"}</span>
+            <span>Documento gerado em {new Date().toLocaleDateString()}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
