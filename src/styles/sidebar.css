@@ -1,32 +1,17 @@
-/* ==========================================================================
-   SIDEBAR - COOKIESTATION (ESTILO CAFETERIA PREMIUM)
-   ========================================================================== */
-
-:root {
-  --sidebar-width: 280px;
-  --cookie-brown: #3d2b1f;
-  --cookie-tan: #6b4f3b;
-  --cookie-gold: #d4a373;
-  --latte-cream: #fdfbf7;
-  --border-light: #f3eeeb;
-  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 🍔 BOTÃO HAMBURGUER */
 .hamburger {
-  display: none; /* Escondido no Desktop */
+  display: none;
   position: fixed;
   top: 15px;
   left: 15px;
-  z-index: 1100; /* Acima de tudo */
+  z-index: 1100;
   width: 45px;
   height: 45px;
-  background: white;
-  border: 1.5px solid var(--border-light);
-  border-radius: 12px;
+  background: var(--paper-white);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   cursor: pointer;
   padding: 8px;
-  transition: var(--transition-smooth);
+  transition: var(--transition);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
@@ -39,18 +24,16 @@
   display: block;
   height: 3px;
   width: 100%;
-  background: var(--cookie-tan);
+  background: var(--mocha-dark);
   margin: 5px 0;
   border-radius: 10px;
-  transition: var(--transition-smooth);
+  transition: var(--transition);
 }
 
-/* ANIMAÇÃO HAMBURGUER → X */
 .hamburger.active span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
 .hamburger.active span:nth-child(2) { opacity: 0; }
 .hamburger.active span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
-/* 🌑 OVERLAY (Fundo Escuro) */
 .overlay {
   position: fixed;
   inset: 0;
@@ -60,23 +43,21 @@
   animation: fadeIn 0.3s ease;
 }
 
-/* 📦 CONTAINER DA SIDEBAR */
 .sidebar-container {
   width: var(--sidebar-width);
-  background-color: white;
+  background-color: var(--paper-white);
   height: 100vh;
   display: flex;
   flex-direction: column;
-  border-right: 1.5px solid var(--border-light);
+  border-right: 1.5px solid var(--border-subtle);
   padding: 40px 20px;
-  position: sticky; /* Mantém fixa no scroll do desktop */
+  position: sticky;
   top: 0;
   left: 0;
   z-index: 100;
-  transition: transform var(--transition-smooth);
+  transition: transform var(--transition), background-color 0.3s ease;
 }
 
-/* ☕ LOGO */
 .sidebar-logo {
   display: flex;
   align-items: center;
@@ -93,11 +74,10 @@
 .logo-text {
   font-size: 1.5rem;
   font-weight: 900;
-  color: var(--cookie-brown);
+  color: var(--mocha-dark);
   letter-spacing: -0.5px;
 }
 
-/* 📚 NAVEGAÇÃO (NAV) */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -109,29 +89,40 @@
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #8b7e74;
+  color: var(--text-muted);
   padding: 14px 18px;
   border-radius: 14px;
   font-weight: 600;
   font-size: 0.95rem;
-  transition: var(--transition-smooth);
+  transition: var(--transition);
 }
 
 .nav-item:hover {
   background-color: var(--latte-cream);
-  color: var(--cookie-tan);
+  color: var(--mocha-dark);
   transform: translateX(5px);
 }
 
 .nav-item.active {
-  background-color: #fdf6f0; /* Tom café com leite suave */
+  background-color: var(--latte-cream);
   color: var(--cookie-gold);
   box-shadow: inset 4px 0 0 var(--cookie-gold);
 }
 
-/* 👤 FOOTER DA SIDEBAR */
+.theme-toggle-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--cookie-gold) !important;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
 .sidebar-footer {
-  border-top: 1.5px solid var(--border-light);
+  border-top: 1.5px solid var(--border-subtle);
   padding-top: 25px;
   margin-top: auto;
 }
@@ -166,21 +157,21 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid white;
+  border: 2px solid var(--paper-white);
 }
 
-.status-dot.online { background: #4caf50; box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); }
+.status-dot.online { background: var(--success); box-shadow: 0 0 5px rgba(39, 174, 96, 0.5); }
 .status-dot.offline { background: #bdbdbd; }
 
 .user-text {
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Para o truncamento de texto funcionar */
+  min-width: 0;
 }
 
 .user-name {
   font-weight: 700;
-  color: var(--cookie-brown);
+  color: var(--mocha-dark);
   font-size: 0.95rem;
   white-space: nowrap;
   overflow: hidden;
@@ -189,62 +180,57 @@
 
 .user-email {
   font-size: 0.8rem;
-  color: #a09084;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* 🚪 BOTÃO LOGOUT */
 .btn-logout {
   width: 100%;
   background: transparent;
-  border: 1.5px solid var(--border-light);
-  color: #8b7e74;
+  border: 1.5px solid var(--border-subtle);
+  color: var(--text-muted);
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-logout:hover {
-  background-color: #fff0f0;
-  color: #e63946;
-  border-color: #ffe0e0;
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--error);
+  border-color: var(--error);
 }
-
-/* ==========================================================================
-   📱 RESPONSIVIDADE (MOBILE)
-   ========================================================================== */
 
 @media (max-width: 768px) {
   .hamburger {
-    display: block; /* Mostra o botão no mobile */
+    display: block;
   }
 
   .sidebar-container {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1001; /* Acima do overlay */
-    transform: translateX(-100%); /* Esconde fora da tela */
+    z-index: 1001;
+    transform: translateX(-100%);
     box-shadow: none;
     width: 280px;
     max-width: 80vw;
   }
 
   .sidebar-container.open {
-    transform: translateX(0); /* Desliza para dentro */
+    transform: translateX(0);
     box-shadow: 10px 0 40px rgba(0, 0, 0, 0.2);
   }
 
   .sidebar-logo {
-    margin-top: 20px; /* Ajuste para não colidir com o botão hamburguer */
+    margin-top: 20px;
   }
 
   .nav-item {
-    font-size: 1.05rem; /* Itens um pouco maiores para touch */
+    font-size: 1.05rem;
     padding: 16px;
   }
 }

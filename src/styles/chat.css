@@ -2,7 +2,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #140d09;
+  background-color: #140D09;
   height: 100%;
   width: 100%;
   min-width: 0;
@@ -33,12 +33,12 @@
   width: 35px;
   height: 35px;
   border-radius: 50%;
-  border: 1.5px solid var(--cookie-gold);
+  border: 1.5px solid #D4A373;
   object-fit: cover;
 }
 
 .chat-header h3 {
-  color: var(--cookie-gold);
+  color: #D4A373;
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0;
@@ -94,23 +94,23 @@
 
 .msg-bubble.sent {
   align-self: flex-end;
-  background: var(--cookie-gold);
-  color: #1a120b;
+  background: #D4A373;
+  color: #1A120B;
   border-bottom-right-radius: 4px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .msg-bubble.received {
   align-self: flex-start;
-  background-color: #231c15;
-  color: #e6d5c3;
+  background-color: #231C15;
+  color: #E6D5C3;
   border-bottom-left-radius: 4px;
   border: 1px solid rgba(212, 163, 115, 0.1);
 }
 
 .chat-input-form {
   padding: 15px 20px;
-  background-color: #1e1611;
+  background-color: #1E1611;
   border-top: 1px solid rgba(212, 163, 115, 0.08);
   flex-shrink: 0;
 }
@@ -126,29 +126,30 @@
 
 .chat-input-form input {
   flex: 1;
-  background-color: #140d09;
+  background-color: #140D09;
   border: 1px solid rgba(212, 163, 115, 0.2);
   padding: 12px 20px;
   border-radius: 25px;
-  color: #fff;
+  color: #FFFFFF;
   outline: none;
   transition: all 0.2s;
   font-size: 0.95rem;
 }
 
 .chat-input-form input:focus {
-  border-color: var(--cookie-gold);
-  background-color: #000;
+  border-color: #D4A373;
+  background-color: #000000;
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.05);
 }
 
 .chat-input-form button {
-  background-color: var(--cookie-gold);
-  color: #1a120b;
+  background-color: #D4A373;
+  color: #1A120B;
   border: none;
   height: 42px;
-  padding: 0 20px;
+  padding: 0 24px;
   border-radius: 22px;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -163,6 +164,7 @@
 .chat-input-form button:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.1);
+  box-shadow: 0 4px 12px rgba(212, 163, 115, 0.2);
 }
 
 @media (max-width: 900px) {

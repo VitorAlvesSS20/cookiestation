@@ -1,23 +1,10 @@
-:root { 
-  --cookie-gold: #D4A373;
-  --mocha-dark: #1A120B;
-  --mocha-medium: #3C2A21;
-  --text-body: #4F3B30;
-  --text-muted: #6B5D55;
-  --latte-bg: #FDFBF7;
-  --white: #FFFFFF;
-  --transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  --shadow-sm: 0 4px 12px rgba(26, 18, 11, 0.05);
-  --shadow-md: 0 12px 24px rgba(26, 18, 11, 0.08);
-  --shadow-lg: 0 20px 40px rgba(26, 18, 11, 0.15);
-}
-
 .home-container {
   max-width: 1440px;
   margin: 0 auto;
   padding: 0 20px 100px 20px;
-  background-color: var(--latte-bg);
+  background-color: var(--latte-cream);
   min-height: 100vh;
+  transition: background-color 0.3s ease;
 }
 
 .audio-controls-wrapper {
@@ -36,14 +23,14 @@
   height: 56px;
   border-radius: 50%;
   background: var(--cookie-gold);
-  color: var(--white);
+  color: var(--paper-white);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: var(--transition);
   box-shadow: var(--shadow-md);
-  border: 2px solid var(--white);
+  border: 2px solid var(--paper-white);
   outline: none;
   padding: 0;
 }
@@ -74,14 +61,14 @@
 }
 
 .music-menu {
-  background: var(--white);
+  background: var(--paper-white);
   padding: 10px;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border: 1px solid rgba(212, 163, 115, 0.2);
+  border: 1px solid var(--border-subtle);
   min-width: 180px;
 }
 
@@ -89,9 +76,9 @@
   background: transparent;
   border: none;
   padding: 12px 18px;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   font-weight: 700;
-  color: var(--text-body);
+  color: var(--text-main);
   cursor: pointer;
   transition: var(--transition);
   text-align: left;
@@ -108,7 +95,7 @@
 
 .music-menu button.active {
   background: var(--mocha-dark);
-  color: var(--cookie-gold);
+  color: var(--paper-white);
 }
 
 .hero-banner {
@@ -124,9 +111,9 @@
 .hero-overlay {
   background: linear-gradient(
     90deg,
-    rgba(26, 18, 11, 1) 0%,
-    rgba(26, 18, 11, 0.85) 40%,
-    rgba(26, 18, 11, 0) 100%
+    var(--mocha-dark) 0%,
+    rgba(60, 42, 33, 0.85) 40%,
+    transparent 100%
   );
   height: 100%;
   width: 100%;
@@ -142,7 +129,7 @@
   margin: 0 0 24px 0;
   line-height: 1.1;
   font-weight: 900;
-  color: var(--white);
+  color: var(--paper-white);
 }
 
 .hero-content h1 span {
@@ -160,7 +147,7 @@
 
 .btn-primary-home {
   background: var(--cookie-gold);
-  color: var(--mocha-dark);
+  color: var(--paper-white);
   padding: 18px 48px;
   border-radius: 100px;
   font-weight: 800;
@@ -193,8 +180,8 @@
   padding: 10px 22px;
   border-radius: 999px;
   border: 2px solid transparent;
-  background: var(--white);
-  color: var(--mocha-medium);
+  background: var(--paper-white);
+  color: var(--text-muted);
   font-weight: 700;
   cursor: pointer;
   transition: var(--transition);
@@ -211,7 +198,7 @@
 
 .genre-tab.active {
   background: var(--mocha-dark);
-  color: var(--cookie-gold);
+  color: var(--paper-white);
   border-color: var(--cookie-gold);
   box-shadow: 0 6px 16px rgba(26, 18, 11, 0.2);
 }
@@ -223,11 +210,11 @@
 }
 
 .story-card {
-  background: var(--white);
+  background: var(--paper-white);
   border-radius: 32px;
   overflow: hidden;
   transition: var(--transition);
-  border: 1px solid rgba(60, 42, 33, 0.08);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   height: 100%;
   display: flex;
@@ -246,7 +233,7 @@
   height: 380px;
   position: relative;
   overflow: hidden;
-  background-color: #efebe4;
+  background-color: var(--latte-cream);
 }
 
 .card-image {
@@ -284,7 +271,7 @@
 .card-content h3 {
   font-family: 'Playfair Display', serif;
   font-size: 1.6rem;
-  color: var(--mocha-dark);
+  color: var(--espresso-accent);
   margin-bottom: 8px;
 }
 
@@ -296,7 +283,7 @@
 
 .card-author-name span {
   font-weight: 700;
-  color: var(--mocha-medium);
+  color: var(--text-main);
 }
 
 .card-meta {
@@ -307,12 +294,12 @@
   color: var(--text-muted);
   padding-top: 20px;
   margin-top: auto;
-  border-top: 1px solid rgba(60, 42, 33, 0.06);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .skeleton-card {
   height: 520px;
-  background: linear-gradient(90deg, #f8f6f2 25%, #efebe4 50%, #f8f6f2 75%);
+  background: linear-gradient(90deg, var(--latte-cream) 25%, var(--input-border) 50%, var(--latte-cream) 75%);
   background-size: 200% 100%;
   animation: loading 1.8s infinite linear;
   border-radius: 32px;

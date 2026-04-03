@@ -1,15 +1,11 @@
-/* ============================================================
-   COOKIESTATION - PROFILE STYLES (COMPLETO & CORRIGIDO)
-   ============================================================ */
-
 :root {
   --mocha-dark: #1A120B;
-  --mocha-medium: #8B7E74;
+  --mocha-medium: #70635B;
   --cookie-gold: #D4A373;
   --cream-bg: #F3EEEB;
   --cream-light: #FDFBFA;
-  --danger: #E63946;
-  --xp-gold: #f1c40f;
+  --danger: #D62828;
+  --xp-gold: #F1C40F;
 }
 
 .profile-container {
@@ -18,7 +14,6 @@
   padding: 60px 20px;
 }
 
-/* HEADER DO PERFIL */
 .profile-card-header {
   background: white;
   padding: 40px;
@@ -26,7 +21,7 @@
   border: 1.5px solid var(--cream-bg);
   margin-bottom: 50px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+  box-shadow: 0 10px 30px rgba(26, 18, 11, 0.05);
 }
 
 .avatar-wrapper {
@@ -38,9 +33,9 @@
   background-position: center;
   border: 4px solid var(--cookie-gold);
   background-color: var(--cream-bg);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* NOVOS ELEMENTOS: XP E STATUS */
 .title-row {
   display: flex;
   align-items: center;
@@ -53,33 +48,34 @@
   font-size: 2.2rem;
   color: var(--mocha-dark);
   margin: 0;
+  font-weight: 900;
 }
 
 .xp-badge {
   background: var(--xp-gold);
-  color: var(--mocha-dark);
-  padding: 5px 14px;
+  color: #1A120B;
+  padding: 6px 14px;
   border-radius: 20px;
   font-weight: 800;
   font-size: 0.85rem;
-  box-shadow: 0 4px 10px rgba(241, 196, 15, 0.3);
+  box-shadow: 0 4px 10px rgba(241, 196, 15, 0.2);
   white-space: nowrap;
 }
 
 .status-bubble {
-  background: #FFF9F0;
+  background: #FFFBF5;
   border-left: 4px solid var(--cookie-gold);
-  padding: 10px 20px;
+  padding: 12px 20px;
   font-style: italic;
-  color: #5d4037;
+  color: #4A3728;
   border-radius: 8px;
   margin: 15px auto;
   display: inline-block;
-  max-width: 80%;
+  max-width: 85%;
   font-size: 0.95rem;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.02);
 }
 
-/* FORMULÁRIO DE EDIÇÃO */
 .edit-form-classic {
   display: flex;
   flex-direction: column;
@@ -90,112 +86,123 @@
 
 .edit-form-classic input, 
 .edit-form-classic textarea {
-  padding: 12px 16px;
-  border: 1.5px solid #EBE4DE;
+  padding: 14px 16px;
+  border: 1.5px solid #DED7D1;
   border-radius: 12px;
   font-family: inherit;
-  font-size: 0.95rem;
-  transition: border-color 0.2s;
+  font-size: 1rem;
+  color: var(--mocha-dark);
+  background: white;
+  transition: all 0.2s;
 }
 
 .edit-form-classic input:focus, 
 .edit-form-classic textarea:focus {
   outline: none;
   border-color: var(--cookie-gold);
+  box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.1);
 }
 
 .edit-btns {
   display: flex;
   gap: 10px;
   justify-content: center;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 .btn-save { 
   background: var(--mocha-dark); 
   color: white; 
-  padding: 12px 30px; 
+  padding: 14px 35px; 
+  border-radius: 12px; 
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-save:hover {
+  background: #2D241E;
+  transform: translateY(-2px);
+}
+
+.btn-cancel { 
+  background: var(--cream-bg); 
+  color: var(--mocha-dark);
+  padding: 14px 35px; 
   border-radius: 12px; 
   border: none;
   font-weight: 700;
   cursor: pointer;
 }
 
-.btn-cancel { 
-  background: var(--cream-bg); 
-  color: var(--mocha-medium); 
-  padding: 12px 30px; 
-  border-radius: 12px; 
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* EXIBIÇÃO DE INFORMAÇÕES */
 .meta-info {
   margin-bottom: 15px;
   display: flex;
   justify-content: center;
-  gap: 15px;
+  gap: 20px;
 }
 
 .location-tag { 
   color: var(--mocha-medium); 
-  font-size: 0.9rem; 
-  font-weight: 500;
+  font-size: 0.95rem; 
+  font-weight: 600;
 }
 
 .bio-text { 
-  color: var(--mocha-medium); 
-  line-height: 1.6;
+  color: #4A3728;
+  line-height: 1.7;
   margin-bottom: 25px; 
-  max-width: 600px; 
+  max-width: 650px; 
   margin-left: auto; 
   margin-right: auto; 
+  font-size: 1rem;
 }
 
 .btn-edit-text { 
   background: none;
   border: none;
-  color: var(--cookie-gold); 
-  font-weight: 700; 
+  color: #B07D4B;
+  font-weight: 800; 
   text-decoration: underline; 
   cursor: pointer; 
   font-size: 0.95rem;
 }
 
-/* SEÇÃO DE OBRAS */
 .profile-header-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 35px;
   padding: 0 10px;
 }
 
 .profile-header-actions h2 {
   color: var(--mocha-dark);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 900;
 }
 
 .btn-new-book {
   background: var(--cookie-gold);
-  color: white;
-  padding: 12px 24px;
+  color: #1A120B;
+  padding: 14px 28px;
   border-radius: 14px;
-  font-weight: 700;
+  font-weight: 800;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s;
 }
 
-.btn-new-book:hover { transform: scale(1.03); }
+.btn-new-book:hover { 
+  transform: scale(1.03); 
+  filter: brightness(1.1);
+}
 
-/* GRID DE LIVROS */
 .books-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
+  gap: 30px;
 }
 
 .book-card-item {
@@ -210,7 +217,8 @@
 
 .book-card-item:hover { 
   transform: translateY(-8px); 
-  box-shadow: 0 15px 35px rgba(26, 18, 11, 0.08);
+  box-shadow: 0 15px 40px rgba(26, 18, 11, 0.12);
+  border-color: var(--cookie-gold);
 }
 
 .book-visual {
@@ -219,85 +227,96 @@
   background-size: cover;
   background-position: center;
   position: relative;
-  background-color: #eee;
+  background-color: #F3F0EE;
 }
 
 .book-badge {
   position: absolute;
   top: 15px;
   left: 15px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 6px 14px;
+  background: white;
+  padding: 8px 16px;
   border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 800;
+  font-size: 0.75rem;
+  font-weight: 900;
   color: var(--mocha-dark);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .book-details { 
-  padding: 20px; 
+  padding: 24px; 
   flex-grow: 1;
   display: flex;
   flex-direction: column;
 }
 
 .book-details h3 { 
-  font-size: 1.15rem; 
+  font-size: 1.25rem; 
   color: var(--mocha-dark); 
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  font-weight: 800;
 }
 
 .book-details p { 
   color: var(--mocha-medium); 
-  font-size: 0.85rem; 
-  margin-bottom: 18px; 
+  font-size: 0.9rem; 
+  margin-bottom: 20px; 
+  line-height: 1.5;
 }
 
 .book-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   margin-top: auto;
 }
 
 .btn-view, .btn-add-cap {
   flex: 2;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 12px;
   border: none;
-  font-weight: 700;
-  font-size: 0.8rem;
+  font-weight: 800;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.btn-view { background: var(--mocha-dark); color: white; }
-.btn-add-cap { background: var(--cream-bg); color: var(--mocha-dark); }
+.btn-view { 
+  background: var(--mocha-dark); 
+  color: white; 
+}
+
+.btn-add-cap { 
+  background: var(--cream-bg); 
+  color: var(--mocha-dark); 
+}
 
 .btn-delete-book {
-  flex: 0.8;
-  background: #FFF0F0;
-  border: 1.5px solid #FFE0E0;
+  flex: 0.7;
+  background: #FFF5F5;
+  border: 1.5px solid #FFDADA;
   color: var(--danger);
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  transition: all 0.2s;
 }
 
 .btn-delete-book:hover {
   background: var(--danger);
   color: white;
+  border-color: var(--danger);
 }
 
-/* ZONA DE PERIGO */
 .danger-zone-footer {
   margin-top: 80px;
-  padding: 40px 0;
-  border-top: 1.5px solid var(--cream-bg);
+  padding: 50px 0;
+  border-top: 2px solid var(--cream-bg);
   text-align: center;
 }
 
@@ -305,20 +324,20 @@
   background: none;
   border: none;
   color: var(--danger);
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   text-decoration: underline;
-  font-size: 0.85rem;
-  opacity: 0.7;
+  font-size: 0.9rem;
+  opacity: 0.85;
   transition: 0.2s;
 }
 
 .btn-danger-text:hover { opacity: 1; }
 
-/* Loader Sincronizando */
 .loader {
   text-align: center;
   padding: 100px;
   font-size: 1.2rem;
+  font-weight: 600;
   color: var(--mocha-medium);
 }
