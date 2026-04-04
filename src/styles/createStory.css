@@ -406,70 +406,70 @@ select.url-input {
   }
 
   .print-header-meta {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr;
-    gap: 0;
-    margin-bottom: 30mm;
-  }
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 0;
+  margin-bottom: 30mm;
+}
 
-  .print-header-meta div {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    text-align: left;
-  }
+.print-header-meta div {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  text-align: left;
+}
 
-  .print-header-meta div:last-child {
-    border-right: none;
-  }
+.print-header-meta div:last-child {
+  border-right: none;
+}
 
-  .print-header-meta div::before {
-    content: attr(data-label);
-    font-size: 7pt;
-    font-weight: 900;
-    color: #d4a373;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 4px;
-  }
+.print-header-meta div::before {
+  content: attr(data-label);
+  font-size: 7pt;
+  font-weight: 900;
+  color: #d4a373;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
 
-  .print-header-meta span {
-    font-size: 11pt;
-    font-weight: 600;
-    color: #1a120b;
-    text-transform: none;
-    letter-spacing: 0;
-  }
+.print-header-meta span {
+  font-size: 11pt;
+  font-weight: 600;
+  color: #1a120b;
+  text-transform: none;
+  letter-spacing: 0;
+}
 
-  .print-synopsis h2 {
-    font-size: 10pt;
-    font-weight: 900;
-    text-align: left;
-    margin-bottom: 10mm;
-    color: #1a120b;
-    text-transform: uppercase;
-    letter-spacing: 6px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
+.print-synopsis h2 {
+  font-size: 10pt;
+  font-weight: 900;
+  text-align: left;
+  margin-bottom: 10mm;
+  color: #1a120b;
+  text-transform: uppercase;
+  letter-spacing: 6px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
-  .print-synopsis h2::after {
-    content: '';
-    flex: 1;
-    height: 0.5pt;
-    background: #1a120b;
-  }
+.print-synopsis h2::after {
+  content: '';
+  flex: 1;
+  height: 0.5pt;
+  background: #1a120b;
+}
 
-  .print-synopsis p {
-    font-size: 12pt;
-    line-height: 2.2;
-    text-align: justify;
-    color: #1a120b;
-    padding: 0 10mm;
-  }
+.print-synopsis p {
+  font-size: 12pt;
+  line-height: 2.2;
+  text-align: justify;
+  color: #1a120b;
+  padding: 0 10mm;
+}
 
   .print-footer-info {
     position: absolute;
