@@ -148,7 +148,7 @@ const Home: React.FC = () => {
                 className="btn-primary-home"
                 onClick={() => navigate("/create")}
               >
-                Escrever Minha Obra
+                Escrever
               </button>
             </div>
           </motion.div>
