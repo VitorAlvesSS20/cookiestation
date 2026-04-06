@@ -233,7 +233,7 @@ const CreateStory: React.FC = () => {
         <main className="create-main-form">
           <input
             className="main-title-input"
-            placeholder="Título da sua história..."
+            placeholder="Título"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -296,7 +296,7 @@ const CreateStory: React.FC = () => {
           <label className="label-url">Tags e Identidade</label>
           <input
             className="url-input"
-            placeholder="Tags (ação, romance, etc) separadas por vírgula"
+            placeholder="Tags - separadas por vírgula"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
           />
@@ -328,7 +328,7 @@ const CreateStory: React.FC = () => {
             className="main-content-input"
             value={synopsis}
             onChange={(e) => setSynopsis(e.target.value)}
-            placeholder="Escreva uma sinopse cativante..."
+            placeholder="Sinopse..."
           />
         </main>
       </div>

@@ -221,7 +221,7 @@ const CreateChapter: React.FC = () => {
           <div className="field">
             <input
               className="main-title-input"
-              placeholder="Dê um nome ao seu capítulo..."
+              placeholder="Título..."
               value={chapterTitle}
               onChange={(e) => setChapterTitle(e.target.value)}
             />
@@ -272,7 +272,6 @@ const CreateChapter: React.FC = () => {
         </main>
       </div>
 
-      {/* SEÇÃO DE IMPRESSÃO DO CAPÍTULO */}
       <div className="print-only-section">
         <div className="print-cover">
           {chapterCover && (
