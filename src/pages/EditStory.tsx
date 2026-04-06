@@ -188,7 +188,7 @@ const EditStory: React.FC = () => {
               className="main-title-input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Título da sua história..."
+              placeholder="Título"
             />
           </div>
 
